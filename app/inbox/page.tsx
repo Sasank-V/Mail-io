@@ -73,7 +73,7 @@ export default function Inbox() {
 
     setIsSyncing(true);
     try {
-      let url = "/api/get/emails";
+      let url = "/api/emails/get";
       url = url + `?user_id=${session.user.id}`;
       url = url + `&page_token=${pageTokenArray[currentPage]}`;
 
@@ -266,7 +266,7 @@ export default function Inbox() {
         <Button
           onClick={getEmails}
           disabled={isSyncing || status !== "authenticated"}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-contrast"
         >
           <RefreshCw className="h-4 w-4" />
           {isSyncing ? "Syncing..." : "Sync Emails"}
@@ -276,7 +276,7 @@ export default function Inbox() {
       <div className="w-full flex gap-8">
         <Card className="w-64 h-[calc(94vh-200px)] bg-background">
           <CardContent className="p-4">
-            <Button className="w-full mb-4" variant="default">
+            <Button className="w-full mb-4 bg-contrast" variant="default">
               Compose
             </Button>
             <ScrollArea className="h-[calc(100%-60px)]">
@@ -364,9 +364,9 @@ export default function Inbox() {
                         onClick={() => handleMailPopup(email)}
                         onMouseEnter={() => setHoveredEmailId(email.message_id)}
                         onMouseLeave={() => setHoveredEmailId(null)}
-                        className="relative flex items-center space-x-4 p-4 hover:bg-muted w-full rounded-lg cursor-pointer"
+                        className="relative flex items-center space-x-4 p-4 hover:bg-contrast/15 w-full rounded-lg cursor-pointer"
                       >
-                        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+                        <div className="w-12 h-12 rounded-full bg-contrast flex items-center justify-center text-primary-foreground font-semibold">
                           {email.headers.from.charAt(0)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -376,7 +376,7 @@ export default function Inbox() {
                           <p className="text-sm font-medium truncate">
                             {email.headers.subject}
                           </p>
-                          <p className="text-sm text-muted-foreground truncate">
+                          <p className="text-sm text-contrast/50 truncate">
                             {email.snippet}
                           </p>
                         </div>

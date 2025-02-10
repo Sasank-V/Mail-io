@@ -10,13 +10,13 @@ export const LoadingScreen = () => {
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-card p-8 rounded-lg shadow-lg flex flex-col items-center"
+        className="bg-background p-8 rounded-lg shadow-lg flex flex-col items-center"
         initial={{ scale: 0.8, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
       >
         <motion.div
-          className="relative w-48 h-32 mb-6"
+          className="relative w-48 h-32 mb-6 bg-background"
           initial={{ rotateY: 0 }}
           animate={{ rotateY: 180 }}
           transition={{
@@ -27,7 +27,7 @@ export const LoadingScreen = () => {
           }}
         >
           <motion.div
-            className="absolute inset-0 bg-primary rounded-lg"
+            className="absolute inset-0 bg-background rounded-lg"
             style={{
               transformStyle: "preserve-3d",
               backfaceVisibility: "hidden",
@@ -36,7 +36,7 @@ export const LoadingScreen = () => {
             <Mail className="w-full h-full text-primary-foreground p-4" />
           </motion.div>
           <motion.div
-            className="absolute inset-0 bg-secondary rounded-lg flex items-center justify-center"
+            className="absolute inset-0 bg-background rounded-lg flex items-center justify-center"
             style={{
               transformStyle: "preserve-3d",
               backfaceVisibility: "hidden",
