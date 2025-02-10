@@ -35,7 +35,7 @@ export default function Inbox() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageTokenArray, setPageTokenArray] = useState<string[]>([""]);
   const [isMailSelected, setIsMailSelected] = useState<boolean>(false);
-  const [selectedMail, setSelectedMail] = useState<IEmail>({});
+  const [selectedMail, setSelectedMail] = useState<Partial<IEmail>>({});
 
   const [isNewCategoryModalOpen, setIsCategoryModalOpen] =
     useState<boolean>(false);

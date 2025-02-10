@@ -5,7 +5,7 @@ function EmailView({
   email,
   setIsMailSelected,
 }: {
-  email: IEmail;
+  email: Partial<IEmail>;
   setIsMailSelected: (val: boolean) => void;
 }) {
   return (
@@ -21,13 +21,13 @@ function EmailView({
           <div className="h-full border-r-black border-r-4 p-5 pr-3">
             From:{" "}
           </div>
-          <div className="p-5">{email.headers.from}</div>
+          <div className="p-5">{email.headers?.from}</div>
         </div>
         <div className="p-10 py-[100px] h-full overflow-y-auto">
         {email.bodyHTML !== "" ? (
           <div
             className=""
-            dangerouslySetInnerHTML={{ __html: email.bodyHTML }}
+            dangerouslySetInnerHTML={{ __html: email.bodyHTML! }}
           />
         ) : (
           <div className="">{email.snippet}</div>
@@ -37,7 +37,7 @@ function EmailView({
           <div className="h-full border-r-black border-r-4 p-5 pr-3">
             From:{" "}
           </div>
-          <div className="p-5">{email.headers.from}</div>
+          <div className="p-5">{email.headers?.from}</div>
         </div>
       </div>
     </div>
