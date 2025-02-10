@@ -19,3 +19,8 @@ export interface ICategory {
   name: string;
   description: string;
 }
+
+export interface Attachment {
+  filename: string;
+  attachmentId: string;
+}

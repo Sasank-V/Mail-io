@@ -1,23 +1,26 @@
 import { oauth2Client } from "@/lib/auth";
-import { google } from "googleapis";
+import { Attachment } from "@/lib/types";
+import { google, gmail_v1 } from "googleapis";
 
 interface FilteredEmail {
   snippet: string;
-  headers: {
-    recieved: [string];
-    date: string;
-    subject: string;
-    from: string;
-    to: string;
-  };
+  headers: Header;
   body: string;
   bodyHTML: string;
-  attachments: { filname: string; attachmentId: string }[];
+  attachments: Attachment[];
+}
+
+interface Header {
+  recieved: string[];
+  date: string;
+  subject: string;
+  from: string;
+  to: string;
 }
 
 export async function getParsedEmail(
   messageId: string
-): Promise<FilteredEmail> {
+): Promise<FilteredEmail | null> {
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   try {
     const res = await gmail.users.messages.get({
@@ -38,7 +41,7 @@ export async function getParsedEmail(
 
     // Get Body and Attachments
     const { bodyText, attachments, bodyHTML } = await processPayload(
-      messageData.payload
+      messageData.payload!
     );
     const filteredEmail = {
       snippet,
@@ -50,33 +53,48 @@ export async function getParsedEmail(
     return filteredEmail;
   } catch (error) {
     console.log("Error while parsing Email:", error);
-    return error;
+    return null;
   }
 }
 
-export function extractDesiredHeaders(headersArray) {
-  const desired = ["received", "from", "date", "subject", "to", "mailing-list"];
-  const result = {};
+export function extractDesiredHeaders(
+  headersArray: {
+    name?: string | null | undefined;
+    value?: string | null | undefined;
+  }[]
+): Header {
+  const desired = ["received", "from", "date", "subject", "to"];
+  const result: { [key: string]: string | string[] } = {};
+
   for (const header of headersArray) {
-    const name = header.name.toLowerCase();
-    if (desired.includes(name)) {
+    const name = header.name?.toLowerCase();
+    const value = header.value;
+
+    if (name && value && desired.includes(name)) {
       if (result[name]) {
         if (!Array.isArray(result[name])) {
-          result[name] = [result[name]];
+          result[name] = [result[name] as string];
         }
-        result[name].push(header.value);
+        (result[name] as string[]).push(value);
       } else {
-        result[name] = header.value;
+        result[name] = value;
       }
     }
   }
-  return result;
+
+  return {
+    recieved: (result["received"] as string[]) || [""],
+    date: (result["date"] as string) || "",
+    subject: (result["subject"] as string) || "",
+    from: (result["from"] as string) || "",
+    to: (result["to"] as string) || "",
+  };
 }
 
-export async function processPayload(payload) {
+export async function processPayload(payload: gmail_v1.Schema$MessagePart) {
   let bodyText = "";
   let bodyHTML = "";
-  let attachments = [];
+  let attachments: Attachment[] = [];
 
   if (payload.parts && payload.parts.length) {
     for (const part of payload.parts) {

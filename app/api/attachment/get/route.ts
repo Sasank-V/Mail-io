@@ -20,6 +20,13 @@ export async function GET(request: NextRequest) {
     const message_id = searchUrlParams.get("message_id");
     const attachment_id = searchUrlParams.get("attachment_id");
     const filename = searchUrlParams.get("filename");
+    if (!user_id || !attachment_id || !message_id || !filename) {
+      return Response.json({
+        success: false,
+        message:
+          "user_id or message_id or attachment_id or filename does not exist in params",
+      });
+    }
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
     await connect_DB();
@@ -45,7 +52,7 @@ export async function GET(request: NextRequest) {
       id: attachment_id,
     });
     const base64Data = attachmentRes.data.data;
-    const fileBuffer = Buffer.from(base64Data, "base64");
+    const fileBuffer = Buffer.from(base64Data!, "base64");
     const tempDir = path.join(process.cwd(), "temp");
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
