@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+
 import { Mail } from "lucide-react";
 
 export const SyncPrompt = () => {
