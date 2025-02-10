@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     "mongodb",
     "mailparser",
     "@google/generative-ai",
+    "ollama",
   ],
   images: {
     remotePatterns: [
