@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     });
     const base64Data = attachmentRes.data.data;
     const fileBuffer = Buffer.from(base64Data!, "base64");
-    const tempDir = path.join(process.cwd(), "temp");
+    const tempDir = path.join(process.cwd(), "public");
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
     }

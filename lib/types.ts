@@ -15,6 +15,16 @@ export interface IEmail {
   message_id: string;
 }
 
+export interface IAttachment {
+  filename: string;
+  url: string;
+}
+
+export interface IEmailCategoryNumber {
+  name: string,
+  count: number
+}
+
 export interface ICategory {
   name: string;
   description: string;

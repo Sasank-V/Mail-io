@@ -4,6 +4,7 @@ import { cards, features } from "@/lib/constants";
 import { borel } from "@/lib/fonts";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
@@ -33,12 +34,12 @@ const Home = () => {
           <div className="text-[125px] font-semibold mt-14">
             The AI Mail Box
           </div>
-          <div className={`text-2xl `}>
+          <div className={`text-2xl`}>
             Built to make you extraordinarily productive, <br /> Mail.io is the
             best way to manage mails and mark calendars
           </div>
           <button className="bg-contrast text-anti-contrast px-5 py-3 rounded-lg">
-            Get Started
+            <Link href={"/dashboard"}>Get Started</Link>
           </button>
         </div>
       </div>
@@ -52,7 +53,7 @@ const Home = () => {
               <div className="text-[40px]">{feature.title}</div>
               <div>{feature.subtitle}</div>
             </div>
-            <div className="relative overflow-hidden w-full h-[90vh] rounded-[30px]">
+            <div className="relative overflow-hidden w-full h-[85vh] rounded-[30px] flex justify-center items-center over">
               <Image
                 src="/gradient.png"
                 className="inset-0 absolute -z-10 w-full h-full blur-2xl"
@@ -60,6 +61,22 @@ const Home = () => {
                 width={100}
                 height={100}
               />
+              <div className="w-[90%] rounded-xl overflow-hidden">
+                {
+                  feature.type === "video" ?
+                  <video
+                  src={feature.src}
+                  className=""
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  disablePictureInPicture
+                  controlsList="nodownload nofullscreen noremoteplayback"
+                  /> :
+                  <Image src={feature.src} height={1000} width={1000} alt={feature.title} className="w-full h-full bg-red-300" />
+                }
+              </div>
             </div>
           </div>
         ))}
@@ -88,7 +105,7 @@ const Home = () => {
               Try <span className={`${borel.className}`}>Mail.io</span> Now
             </div>
             <button className="bg-contrast text-anti-contrast px-10 py-3 text-2xl rounded-xl">
-              Get Started
+              <Link href={"/dashboard"}>Get Started</Link>
             </button>
           </div>
           <div className="">
