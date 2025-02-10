@@ -258,7 +258,7 @@ export default function Inbox() {
   };
 
   return (
-    <div className="px-8 w-full h-[88vh] flex flex-col gap-10 items-center pb-10 bg-gradient-to-br from-background to-secondary">
+    <div className="px-8 w-full h-[88vh] flex flex-col gap-10 items-center pb-10 bg-background">
       <div className="w-full pt-10 flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-semibold mb-2">Email Inbox</h1>
@@ -274,7 +274,7 @@ export default function Inbox() {
       </div>
 
       <div className="w-full flex gap-8">
-        <Card className="w-64 h-[calc(94vh-200px)]">
+        <Card className="w-64 h-[calc(94vh-200px)] bg-background">
           <CardContent className="p-4">
             <Button className="w-full mb-4" variant="default">
               Compose
@@ -319,7 +319,7 @@ export default function Inbox() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col h-[calc(94vh-200px)] w-full overflow-hidden">
+        <Card className="flex flex-col h-[calc(94vh-200px)] w-full overflow-hidden bg-background">
           <CardContent className="p-4 w-full h-[90%]">
             <div className="flex items-center space-x-2 mb-4 w-full">
               <Search className="w-5 h-5 text-muted-foreground" />
@@ -327,7 +327,7 @@ export default function Inbox() {
                 placeholder="Search emails..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1"
+                className="flex-1 border-contrast/40"
               />
               <div className="flex">
                 <button

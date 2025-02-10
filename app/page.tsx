@@ -2,14 +2,18 @@
 
 import { cards, features } from "@/lib/constants";
 import { borel } from "@/lib/fonts";
+import { useTheme } from "next-themes";
 import Image from "next/image";
+
 const Home = () => {
+  const { theme } = useTheme();
+
   return (
     <div className="px-8 w-[100vw] h-fit flex flex-col gap-10 items-center pb-10">
       <div className="w-full h-[87vh] rounded-3xl overflow-hidden relative">
         <Image
           src="/logo.svg"
-          className="inset-0 absolute -z-9 w-full h-full blur-xl opacity-60"
+          className={`inset-0 absolute -z-9 w-full h-full blur-xl opacity-60 ${theme === "light" ? "invert" : ""}`}
           alt="Sdf"
           width={100}
           height={100}

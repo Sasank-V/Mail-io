@@ -6,10 +6,10 @@ import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { borel } from "@/lib/fonts";
-import { DoorOpen, LogIn } from "lucide-react";
+import { DoorOpen, LogIn, Sun, Moon } from "lucide-react";
 
 const Navbar = () => {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
   const [name, setName] = useState("");
   const session = useSession();
 
@@ -41,7 +41,7 @@ const Navbar = () => {
           href={"/"}
           className={`flex gap-2 ${borel.className} items-center font-bold`}
         >
-          <Image src="/logo.svg" width={30} height={30} alt="logo" />
+          <Image src="/logo.svg" width={30} height={30} className={theme === "light" ? "invert" : ""} alt="logo" />
           <span className="translate-y-2">Mail.io</span>
         </Link>
       </button>
@@ -53,7 +53,13 @@ const Navbar = () => {
         ))}
       </div>
       <div className="flex justify-center items-center gap-5">
-        {/* <button className="bg-secondary px-4 py-2 rounded-3xl" onClick={() => setTheme((prev) => prev == "light" ? "dark" : "light")}>Switch</button> */}
+        <button className="p-2 bg-contrast text-anti-contrast rounded-full" onClick={() => setTheme((prev) => prev == "light" ? "dark" : "light")}>
+          {
+            theme === "light" ?
+            <Sun /> :
+            <Moon />
+          }
+        </button>
         {session?.status === "authenticated" && (
           <button>
             <Image

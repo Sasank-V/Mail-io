@@ -29,13 +29,13 @@ const Dashboard = () => {
         {emailStats.map((stat, index) => (
           <div
             key={index}
-            className="bg-secondary bg-opacity-50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 hover:-translate-y-1"
+            className="bg-secondary bg-opacity-50 backdrop-blur-lg rounded-2xl p-6 border-[1px] border-gray-500 transition-all duration-300 hover:shadow-lg hover:shadow-contrast/20 hover:-translate-y-1"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold">{stat.title}</h2>
-              <stat.icon className="w-8 h-8 text-purple-600" />
+              <stat.icon className="w-8 h-8 text-contrast" />
             </div>
-            <p className="text-4xl font-bold text-purple-text">{stat.count}</p>
+            <p className="text-4xl font-bold text-contrast">{stat.count}</p>
           </div>
         ))}
       </div>
@@ -47,18 +47,18 @@ const Dashboard = () => {
             {[1, 2, 3].map((_, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between py-3 border-b border-gray-700 last:border-b-0"
+                className="flex items-center justify-between py-3 border-b border-gray-500 last:border-b-0"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-full bg-contrast flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-anti-contrast" />
                   </div>
                   <div>
                     <p className="font-medium">New message from John Doe</p>
                     <p className="text-sm text-contrast">2 minutes ago</p>
                   </div>
                 </div>
-                <button className="text-purple-500 hover:text-purple-400 transition-colors">
+                <button className="text-contrast hover:text-purple-400 transition-colors">
                   View
                 </button>
               </div>
@@ -75,7 +75,7 @@ const Dashboard = () => {
           <p className="text-xl text-contrast-secondary mb-4">
             Stay organized and boost your productivity with Mail.io
           </p>
-          <button className="bg-purple-600 text-white px-8 py-3 text-xl rounded-xl hover:bg-purple-700 transition-colors">
+          <button className="bg-contrast text-anti-contrast px-8 py-3 text-xl rounded-xl hover:bg-contrast/70 transition-colors">
             Compose New Email
           </button>
         </div>
