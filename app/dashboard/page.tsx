@@ -14,7 +14,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const getCategoriesList = async () => {
-      const res = await fetch(`/api/emails/category/?user_id=${session?.user?.id}`, {
+      const res = await fetch(`/api/email/category/count?user_id=${session?.user?.id}`, {
         method: "GET"
       });
 
@@ -25,7 +25,7 @@ const Dashboard = () => {
     }
 
     if (status === "authenticated") getCategoriesList();
-  }, []);
+  }, [session?.user?.id, status]);
 
   return (
     <div className="px-8 w-full min-h-screen flex flex-col gap-10 items-center pb-10 bg-gradient-to-br bg-background text-contrast">
