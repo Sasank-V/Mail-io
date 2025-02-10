@@ -7,7 +7,7 @@ import { google } from "googleapis";
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
-import { askGemini, getEventSummaryPrompt } from "@/utils/gemini";
+import { askGemini, getEventSummaryPrompt } from "@/utils/ai-stuff";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { NextRequest } from "next/server";
 import { requireAuthNoNext } from "@/lib/authRequired";
