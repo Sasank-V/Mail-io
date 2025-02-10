@@ -239,13 +239,6 @@ export default function Inbox() {
 
         const {filePath: filePath} = await res.json();
 
-        // const tempDir = path.join(process.cwd(), "temp");
-        // if (!fs.existsSync(tempDir)) {
-        //   fs.mkdirSync(tempDir);
-        // }
-        // const localFilePath = path.join(tempDir, attachment.filename);
-        // fs.writeFileSync(localFilePath, data)
-
         attachments.push({
           filename: attachment.filename,
           url: filePath
