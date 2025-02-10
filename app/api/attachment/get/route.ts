@@ -1,0 +1,67 @@
+import { google } from "googleapis";
+import { NextRequest } from "next/server";
+import { oauth2Client, refresh_access_token } from "@/lib/auth";
+import { connect_DB } from "@/utils/DB";
+import { IUser, User } from "@/models/User";
+import { requireAuthNoNext } from "@/lib/authRequired";
+import path from "path";
+import fs from "fs";
+
+export async function GET(request: NextRequest) {
+  const authResult = await requireAuthNoNext(request);
+  const authRes = await authResult.json();
+  if (!authRes.success) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const searchUrlParams = request.nextUrl.searchParams;
+    const user_id = searchUrlParams.get("user_id");
+    const message_id = searchUrlParams.get("message_id");
+    const attachment_id = searchUrlParams.get("attachment_id");
+    const filename = searchUrlParams.get("filename");
+
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+    await connect_DB();
+    const user = await User.findOne<IUser>({ google_id: user_id });
+    if (!user) {
+      return Response.json(
+        {
+          success: false,
+          message: "User not Found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+    await refresh_access_token(user);
+    oauth2Client.setCredentials({
+      access_token: user.access_token,
+    });
+    const attachmentRes = await gmail.users.messages.attachments.get({
+      userId: "me",
+      messageId: message_id,
+      id: attachment_id,
+    });
+    const base64Data = attachmentRes.data.data;
+    const fileBuffer = Buffer.from(base64Data, "base64");
+    const tempDir = path.join(process.cwd(), "temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+    const localFilePath = path.join(tempDir, filename);
+    fs.writeFileSync(localFilePath, fileBuffer);
+    return Response.json({
+      success: true,
+      message: `Attachment Saved in path : ${localFilePath}`,
+      filePath: localFilePath,
+    });
+  } catch (error) {
+    console.log("Error while fetching Attachment: ", error);
+    return Response.json({
+      success: false,
+      message: "Error while fetching and Creating Attachement",
+    });
+  }
+}
