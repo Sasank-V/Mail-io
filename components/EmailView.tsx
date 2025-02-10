@@ -1,3 +1,5 @@
+"use client"
+
 import { IAttachment, IEmail } from "@/lib/types";
 import { Paperclip, X } from "lucide-react";
 import { useSession } from "next-auth/react";
