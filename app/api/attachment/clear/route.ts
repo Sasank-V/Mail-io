@@ -1,13 +1,15 @@
-import { User } from "@/models/User";
+import { IUser, User } from "@/models/User";
 import { NextRequest } from "next/server";
 import fs from "fs";
+import { connect_DB } from "@/utils/DB";
 
 export async function GET(request: NextRequest) {
   try {
     const searchUrlParams = request.nextUrl.searchParams;
     const filepath = searchUrlParams.get("filepath");
     const user_id = searchUrlParams.get("user_id");
-    const user = await User.findOne({
+    await connect_DB();
+    const user = await User.findOne<IUser>({
       google_id: user_id,
     });
     if (!filepath || !user_id) {

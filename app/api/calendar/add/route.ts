@@ -11,6 +11,7 @@ import { askGemini, getEventSummaryPrompt } from "@/utils/gemini";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { NextRequest } from "next/server";
 import { requireAuthNoNext } from "@/lib/authRequired";
+import { Attachment } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAuthNoNext(request);
@@ -18,11 +19,17 @@ export async function GET(request: NextRequest) {
   if (!authRes.success) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
+
   try {
     const searchUrlParams = request.nextUrl.searchParams;
     const user_id = searchUrlParams.get("user_id");
     const message_id = searchUrlParams.get("message_id");
+    if (!user_id || !message_id) {
+      return Response.json({
+        success: false,
+        message: "user_id or message_id does not exist in params",
+      });
+    }
 
     await connect_DB();
     const user = await User.findOne<IUser>({ google_id: user_id });
@@ -49,6 +56,15 @@ export async function GET(request: NextRequest) {
     oauth2Client.setCredentials({ access_token: user.access_token });
 
     const email = await getParsedEmail(message_id);
+    if (!email) {
+      return Response.json(
+        {
+          success: false,
+          message: "Error in getting Parsed mail",
+        },
+        { status: 500 }
+      );
+    }
     const eventPrompt = getEventSummaryPrompt(JSON.stringify(email));
 
     const allowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"];
@@ -96,17 +112,14 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error while processing event:", error);
-    return Response.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    return Response.json({ success: false, error }, { status: 500 });
   }
 }
 
 export async function markEventInCalendarWithAttachment(
-  message_id,
-  attachment,
-  eventPrompt
+  message_id: string,
+  attachment: Attachment,
+  eventPrompt: string
 ) {
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const attachmentRes = await gmail.users.messages.attachments.get({
