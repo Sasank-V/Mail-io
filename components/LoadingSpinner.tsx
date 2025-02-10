@@ -47,7 +47,7 @@ export const LoadingSpinner = () => {
     >
       <div className="flex flex-col items-center">
         <motion.div
-          className="bg-card p-12 rounded-xl flex flex-col items-center relative overflow-hidden"
+          className="bg-background p-12 rounded-xl flex flex-col items-center relative overflow-hidden"
           initial={{ scale: 0.8 }}
           variants={containerVariants}
           animate="animate"
