@@ -8,13 +8,6 @@ const Home = () => {
     <div className="px-8 w-[100vw] h-fit flex flex-col gap-10 items-center pb-10">
       <div className="w-full h-[87vh] rounded-3xl overflow-hidden relative">
         <Image
-          src="/gradient.png"
-          className="inset-0 absolute -z-10 w-full h-full blur-2xl"
-          alt="Sdf"
-          width={100}
-          height={100}
-        />
-        <Image
           src="/logo.svg"
           className="inset-0 absolute -z-9 w-full h-full blur-xl opacity-60"
           alt="Sdf"

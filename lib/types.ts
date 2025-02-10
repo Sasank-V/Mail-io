@@ -1,0 +1,21 @@
+export interface IEmail {
+  attachments: {
+    attachmentId: string;
+    filename: string;
+  }[];
+  snippet: string;
+  bodyHTML: string;
+  body: string;
+  headers: {
+    from: string;
+    date: string;
+    subject: string;
+  };
+  category: string;
+  message_id: string;
+}
+
+export interface ICategory {
+  name: string;
+  description: string;
+}

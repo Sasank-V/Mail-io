@@ -65,7 +65,7 @@ export default {
         },
         "purple-text": {
           DEFAULT: "rgb(var(--purple-text))",
-        },
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
