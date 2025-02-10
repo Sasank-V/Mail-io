@@ -3,7 +3,7 @@ import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
-import { Calendar } from "lucide-react";
+// import { Calendar } from "lucide-react";
 import { requireAuthNoNext } from "@/lib/authRequired";
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (!authRes.success) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
+
   try {
     const searchUrlParams = request.nextUrl.searchParams;
     const user_id = searchUrlParams.get("user_id");
