@@ -15,6 +15,11 @@ export interface IEmail {
   message_id: string;
 }
 
+export interface IEmailCategoryNumber {
+  name: string,
+  count: number
+}
+
 export interface ICategory {
   name: string;
   description: string;

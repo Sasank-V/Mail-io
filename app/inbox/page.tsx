@@ -267,9 +267,9 @@ export default function Inbox() {
       <div className="w-full flex gap-8">
         <Card className="w-64 h-[calc(94vh-200px)] bg-background">
           <CardContent className="p-4">
-            <Button className="w-full mb-4 bg-contrast" variant="default">
+            {/* <Button className="w-full mb-4 bg-contrast" variant="default">
               Compose
-            </Button>
+            </Button> */}
             <ScrollArea className="h-[calc(100%-60px)]">
               <button
                 className={`w-full ${selectedCategory === "All" ? "bg-contrast/15" : ""} justify-start mb-2 relative group flex items-center p-3 hover:bg-contrast/15 rounded-md text-sm`}

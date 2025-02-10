@@ -33,12 +33,12 @@ function EmailView({
           <div className="">{email.snippet}</div>
         )}
         </div>
-        <div className="bg-[#3f3f3f] absolute text-white bottom-0 w-full rounded-t-none flex gap-3 items-center">
+        {/* <div className="bg-[#3f3f3f] absolute text-white bottom-0 w-full rounded-t-none flex gap-3 items-center">
           <div className="h-full border-r-black border-r-4 p-5 pr-3">
             From:{" "}
           </div>
           <div className="p-5">{email.headers?.from}</div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -26,16 +26,22 @@ export const features = [
     title: "Smart Categorization",
     subtitle:
       "Automatically sorts your emails into Events, Achievements, Important, and General for a streamlined inbox.",
+    src: "/category.mov",
+    type: "video"
   },
   {
     title: "Intelligent Parsing",
     subtitle:
       "Extracts key details from your emails, such as dates, subjects, and attachments, to help you manage tasks and schedule events.",
+      src: "/parse.png",
+      type: "image"
   },
   {
     title: "Seamless Integration",
     subtitle:
       "Effortlessly integrate your inbox with your calendar and productivity tools, ensuring you never miss a critical update.",
+      src: "/final.mov",
+      type: "video"
   },
 ];
 

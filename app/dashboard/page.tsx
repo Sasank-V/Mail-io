@@ -3,18 +3,29 @@
 import Image from "next/image";
 import { Mail, MailOpen, Star, Trash, Send, Archive } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { IEmailCategoryNumber } from "@/lib/types";
+import { useSession } from "next-auth/react";
 
 const Dashboard = () => {
   const { theme } = useTheme();
+  const [emailStats, setEmailStats] = useState<IEmailCategoryNumber[]>([]);
+  const {data: session, status} = useSession();
 
-  const emailStats = [
-    { title: "Total Emails", count: 1250, icon: Mail },
-    { title: "Unread Mails", count: 18, icon: MailOpen },
-    { title: "Starred", count: 42, icon: Star },
-    { title: "Trash", count: 8, icon: Trash },
-    { title: "Sent", count: 386, icon: Send },
-    { title: "Archived", count: 129, icon: Archive },
-  ];
+  useEffect(() => {
+    const getCategoriesList = async () => {
+      const res = await fetch(`/api/emails/category/?user_id=${session?.user?.id}`, {
+        method: "GET"
+      });
+
+      const data = await res.json();
+
+      setEmailStats(data.email_category_count);
+      console.log(data);
+    }
+
+    if (status === "authenticated") getCategoriesList();
+  }, []);
 
   return (
     <div className="px-8 w-full min-h-screen flex flex-col gap-10 items-center pb-10 bg-gradient-to-br bg-background text-contrast">
@@ -32,14 +43,14 @@ const Dashboard = () => {
             className="bg-secondary bg-opacity-50 backdrop-blur-lg rounded-2xl p-6 border-[1px] border-gray-500 transition-all duration-300 hover:shadow-lg hover:shadow-contrast/20 hover:-translate-y-1"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold">{stat.title}</h2>
-              <stat.icon className="w-8 h-8 text-contrast" />
+              <h2 className="text-2xl font-semibold">{stat.name}</h2>
+              {/* <stat.icon className="w-8 h-8 text-contrast" /> */}
             </div>
             <p className="text-4xl font-bold text-contrast">{stat.count}</p>
           </div>
         ))}
       </div>
-
+{/* 
       <div className="w-full mt-10">
         <h2 className="text-3xl font-semibold mb-6">Recent Activity</h2>
         <div className="bg-secondary bg-opacity-50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
@@ -90,7 +101,7 @@ const Dashboard = () => {
             height={100}
           />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

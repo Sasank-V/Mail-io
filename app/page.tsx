@@ -52,7 +52,7 @@ const Home = () => {
               <div className="text-[40px]">{feature.title}</div>
               <div>{feature.subtitle}</div>
             </div>
-            <div className="relative overflow-hidden w-full h-[90vh] rounded-[30px]">
+            <div className="relative overflow-hidden w-full h-[85vh] rounded-[30px] flex justify-center items-center over">
               <Image
                 src="/gradient.png"
                 className="inset-0 absolute -z-10 w-full h-full blur-2xl"
@@ -60,6 +60,22 @@ const Home = () => {
                 width={100}
                 height={100}
               />
+              <div className="w-[90%] rounded-xl overflow-hidden">
+                {
+                  feature.type === "video" ?
+                  <video
+                  src={feature.src}
+                  className=""
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  disablePictureInPicture
+                  controlsList="nodownload nofullscreen noremoteplayback"
+                  /> :
+                  <Image src={feature.src} height={1000} width={1000} alt={feature.title} className="w-full h-full bg-red-300" />
+                }
+              </div>
             </div>
           </div>
         ))}
