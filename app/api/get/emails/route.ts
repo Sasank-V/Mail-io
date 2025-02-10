@@ -4,7 +4,7 @@ import { IUser, User } from "@/models/User";
 import { NextRequest } from "next/server";
 import { askGemini, getEmailClassifyPrompt } from "@/utils/gemini";
 import { getParsedEmail } from "@/utils/mail-parser";
-import { requireAuth, requireAuthNoNext } from "@/lib/authRequired";
+import { requireAuthNoNext } from "@/lib/authRequired";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
