@@ -7,11 +7,14 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { borel } from "@/lib/fonts";
 import { DoorOpen, LogIn, Sun, Moon } from "lucide-react";
+import { navs } from "@/lib/constants";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const { setTheme, theme } = useTheme();
   const [name, setName] = useState("");
-  const session = useSession();
+  const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   const handleSignIn = async () => {
     signIn("google");
@@ -22,17 +25,10 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    if (session?.data?.user?.name) {
-      setName(session.data.user.name);
+    if (session?.user?.name) {
+      setName(session.user.name);
     }
   }, [session]);
-
-  const navs = [
-    { title: "Dashboard", link: "/dashboard" },
-    { title: "Inbox", link: "/inbox" },
-    { title: "Enterprise", link: "/enterprise" },
-    { title: "Events", link: "/events" },
-  ];
 
   return (
     <div className="flex justify-between items-center p-7 px-10">
@@ -46,11 +42,19 @@ const Navbar = () => {
         </Link>
       </button>
       <div className="flex gap-12 text-lg items-center">
-        {navs.map((nav, i) => (
-          <div key={i}>
-            <Link href={nav.link}>{nav.title}</Link>
-          </div>
-        ))}
+        {
+          (status !== "authenticated") ? 
+            navs.filter((nav) => nav.auth === false).map((nav, i) => (
+              <div key={i} className={`px-4 py-2 rounded-xl ${pathname === nav.link ? "bg-contrast text-anti-contrast" : ""}`}>
+                <Link href={nav.link}>{nav.title}</Link>
+              </div>
+            )) : 
+            navs.map((nav, i) => (
+              <div key={i} className={`px-4 py-2 rounded-xl ${pathname === nav.link ? "bg-contrast text-anti-contrast" : ""}`}>
+                <Link href={nav.link}>{nav.title}</Link>
+              </div>
+            ))
+        }
       </div>
       <div className="flex justify-center items-center gap-5">
         <button className="p-2 bg-contrast text-anti-contrast rounded-full" onClick={() => setTheme((prev) => prev == "light" ? "dark" : "light")}>
@@ -60,10 +64,10 @@ const Navbar = () => {
             <Moon />
           }
         </button>
-        {session?.status === "authenticated" && (
+        {status === "authenticated" && (
           <button>
             <Image
-              src={`${session?.data?.user?.image}`}
+              src={`${session?.user?.image}`}
               alt="profile"
               height={50}
               width={50}
@@ -71,7 +75,7 @@ const Navbar = () => {
             />
           </button>
         )}
-        {session?.status === "authenticated" ? (
+        {status === "authenticated" ? (
           <button
             className="flex gap-2 bg-contrast text-anti-contrast px-4 py-2 rounded-xl font-semibold"
             onClick={handleSignOut}

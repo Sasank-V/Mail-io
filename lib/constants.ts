@@ -56,3 +56,11 @@ export const cards = [
       "Gain valuable insights and analytics on your email communications to optimize your daily workflow.",
   },
 ];
+
+export const navs = [
+  { title: "Home", link: "/", auth: false },
+  { title: "Dashboard", link: "/dashboard", auth: true },
+  { title: "Inbox", link: "/inbox", auth: true },
+  { title: "Events", link: "/events", auth: true },
+  { title: "Pricing", link: "/pricing", auth: false },
+];

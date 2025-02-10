@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDate } from "@/utils/formatDate";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "react-toastify";
 import NewCategoryModal from "@/components/NewCategoryModal";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import SyncPrompt from "@/components/EmptyEmails";
@@ -35,10 +35,9 @@ export default function Inbox() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageTokenArray, setPageTokenArray] = useState<string[]>([""]);
   const [isMailSelected, setIsMailSelected] = useState<boolean>(false);
-  const [selectedMail, setSelectedMail] = useState<IEmail>({});
+  const [selectedMail, setSelectedMail] = useState<Partial<IEmail>>({});
 
-  const [isNewCategoryModalOpen, setIsCategoryModalOpen] =
-    useState<boolean>(false);
+  const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false);
   const [hoveredIndex, setHoveredIndex] = useState<null | number>(null);
 
   const [hoveredEmailId, setHoveredEmailId] = useState<string | null>(null);
@@ -97,18 +96,10 @@ export default function Inbox() {
         setPageTokenArray([...pageTokenArray, data.next_page_token]);
       }
 
-      toast({
-        title: "Emails synced successfully",
-        description: `${data.messages.length} emails retrieved.`,
-      });
+      toast.success(`${data.messages.length} emails retrieved.`);
     } catch (error) {
       console.error("Error fetching emails:", error);
-      toast({
-        title: "Sync failed",
-        description:
-          "There was an error syncing your emails. Please try again.",
-        variant: "destructive",
-      });
+      toast("There was an error syncing your emails. Please try again.");
     } finally {
       setIsSyncing(false);
     }
@@ -281,33 +272,35 @@ export default function Inbox() {
             </Button>
             <ScrollArea className="h-[calc(100%-60px)]">
               <button
-                className="w-full justify-start mb-2 relative group flex items-center p-3 hover:bg-secondary rounded-md text-sm"
+                className={`w-full ${selectedCategory === "All" ? "bg-contrast/15" : ""} justify-start mb-2 relative group flex items-center p-3 hover:bg-contrast/15 rounded-md text-sm`}
                 onClick={() => setSelectedCategory("All")}
               >
                 All
               </button>
-              {categories.map((category, index) => (
-                <button
-                  key={index}
-                  className="w-full justify-start mb-2 relative group flex items-center p-3 hover:bg-secondary rounded-md text-sm"
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  onClick={() => setSelectedCategory(category.name)}
-                >
-                  {category.name}
+              <div className="h-[220px] overflow-auto mb-5">
+                {categories.map((category, index) => (
+                  <button
+                    key={index}
+                    className={`w-full ${selectedCategory === category.name ? "bg-contrast/15" : ""} justify-start mb-2 relative group flex items-center p-3 hover:bg-contrast/15 rounded-md text-sm`}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    onClick={() => setSelectedCategory(category.name)}
+                  >
+                    {category.name}
 
-                  {hoveredIndex === index && (
-                    <Trash2
-                      className="absolute right-2 top-2 text-gray-500 translate-y-1 hover:text-red-500 cursor-pointer transition-all"
-                      size={20}
-                      onClick={() => handleRemoveCategory(category.name)}
-                    />
-                  )}
-                </button>
-              ))}
+                    {hoveredIndex === index && (
+                      <Trash2
+                        className="absolute right-2 top-2 text-gray-500 translate-y-1 hover:text-red-500 cursor-pointer transition-all"
+                        size={20}
+                        onClick={() => handleRemoveCategory(category.name)}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
               <Button
                 onClick={() => setIsCategoryModalOpen((prev) => !prev)}
-                className="w-full justify-start mb-2 bg-background border-dashed border-2 border-contrast/60 text-contrast hover:bg-secondary"
+                className="w-full justify-start mb-2 bg-background border-dashed border-2 border-contrast/60 text-contrast hover: hover:bg-contrast/15"
               >
                 Add Category
               </Button>

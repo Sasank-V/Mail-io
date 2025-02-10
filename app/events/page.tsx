@@ -59,12 +59,12 @@ export default function Events() {
     return format(parseISO(timeString), "MMM d, yyyy h:mm a");
   };
 
-  const handleEventDeletion = async (event_id) => {
+  const handleEventDeletion = async (event_id: string) => {
     try {
       const res = await fetch(
         `/api/calendar/delete?user_id=${session?.user.id}&event_id=${event_id}`
       );
-      if (!res.success) {
+      if (!res.ok) {
         toast.error(res.message || res.error);
       }
       setEvents(events.filter((event) => event.id != event_id));

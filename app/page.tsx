@@ -4,9 +4,20 @@ import { cards, features } from "@/lib/constants";
 import { borel } from "@/lib/fonts";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 const Home = () => {
   const { theme } = useTheme();
+  const searchParams = useSearchParams();
+  const authRequired = searchParams.get("auth") === "required";
+
+  useEffect(() => {
+    if (authRequired) {
+      toast.error("You need to sign in to access that page!");
+    }
+  }, [authRequired]);
 
   return (
     <div className="px-8 w-[100vw] h-fit flex flex-col gap-10 items-center pb-10">
@@ -83,7 +94,7 @@ const Home = () => {
           <div className="">
             <Image
               src="/logo.svg"
-              className="inset-0 -z-10 w-full h-full -translate-y-20"
+              className={`inset-0 -z-10 w-full h-full -translate-y-20 ${theme === "light" ? "invert" : ""}`}
               alt="Sdf"
               width={100}
               height={100}
