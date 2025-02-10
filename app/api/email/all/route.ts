@@ -2,12 +2,13 @@ import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
 import { NextRequest } from "next/server";
-import { askGemini, getEmailClassifyPrompt } from "@/utils/gemini";
+import { getEmailClassifyPrompt } from "@/utils/ai-stuff";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { requireAuthNoNext } from "@/lib/authRequired";
+import ollama from "ollama";
+import { google } from "googleapis";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export async function GET(request: NextRequest) {
   const authResult = await requireAuthNoNext(request);
   const authRes = await authResult.json();
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
   if (page_token) {
     url.searchParams.append("pageToken", page_token);
   }
-  url.searchParams.append("maxResults", "15");
+  url.searchParams.append("maxResults", "20");
   url.searchParams.append("q", "in:inbox -in:sent");
   oauth2Client.setCredentials({
     access_token: user.access_token,
@@ -45,27 +46,63 @@ export async function GET(request: NextRequest) {
     },
   });
   const data = await listResponse.json();
+  // console.log(data);
+  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const classifiedEmails = [];
+  const threadsVisited: string[] = [];
   for (const message of data.messages) {
-    const parsedEmail = await getParsedEmail(message.id);
+    if (threadsVisited.find((th) => th == message.threadId)) continue;
+    const threadRes = await gmail.users.threads.get({
+      userId: "me",
+      id: message.threadId,
+    });
+    // console.log(threadRes.data);
+    threadsVisited.push(message.threadId);
+    const combinedEmail = {
+      snippet: "",
+      headers: [],
+      body: "",
+      attachments: [],
+      bodyHTML: "",
+    };
+    for (const message of threadRes.data.messages!) {
+      const { headers, attachments, text, html } = await getParsedEmail(
+        message.id!
+      );
+      combinedEmail.headers = combinedEmail.headers.concat(headers);
+      combinedEmail.body += text;
+      combinedEmail.attachments = combinedEmail.attachments.concat(attachments);
+      combinedEmail.bodyHTML += html;
+    }
     const foundMessage = user.messages.find((msg) => msg.id === message.id);
     let category = foundMessage?.category;
     if (!foundMessage) {
       const prompt = getEmailClassifyPrompt(
-        JSON.stringify(parsedEmail),
+        combinedEmail.body,
         user.categories
       );
-      const response = await askGemini(prompt);
+
+      const res = await ollama.chat({
+        model: "qwen2.5:0.5b",
+        messages: [{ role: "user", content: prompt }],
+      });
+      console.log(res.message.content);
+      const response = extractJson(res.message.content);
+      if (!response) {
+        return Response.json({
+          success: false,
+          message: "LLM Gave Shit Response, Try your luck next time",
+        });
+      }
       user.messages.push({
         id: message.id,
         category: response.type,
         marked: false,
       });
       category = response.type;
-      await delay(4000);
     }
     classifiedEmails.push({
-      ...parsedEmail,
+      ...combinedEmail,
       category,
       message_id: message.id,
     });
@@ -77,4 +114,19 @@ export async function GET(request: NextRequest) {
     next_page_token: data.nextPageToken,
     messages: classifiedEmails,
   });
+}
+
+function extractJson(responseText: string) {
+  // This regex matches from the first "{" to the last "}" in the string.
+  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const parsedJson = JSON.parse(jsonMatch[0]);
+      return parsedJson;
+    } catch (err) {
+      console.error("Error parsing JSON:", err);
+      return null;
+    }
+  }
+  return null;
 }
