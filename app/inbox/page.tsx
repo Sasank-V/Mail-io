@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import {
   Search,
@@ -20,7 +20,7 @@ import { toast } from "react-toastify";
 import NewCategoryModal from "@/components/NewCategoryModal";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import SyncPrompt from "@/components/EmptyEmails";
-import { IEmail, ICategory } from "@/lib/types";
+import { IEmail, ICategory, IAttachment } from "@/lib/types";
 import EmailView from "@/components/EmailView";
 
 export default function Inbox() {
@@ -32,15 +32,18 @@ export default function Inbox() {
 
   const [emails, setEmails] = useState<IEmail[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [pageTokenArray, setPageTokenArray] = useState<string[]>([""]);
+
   const [isMailSelected, setIsMailSelected] = useState<boolean>(false);
   const [selectedMail, setSelectedMail] = useState<Partial<IEmail>>({});
-
   const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false);
-  const [hoveredIndex, setHoveredIndex] = useState<null | number>(null);
-
   const [hoveredEmailId, setHoveredEmailId] = useState<string | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [attachments, setAttachments] = useState<IAttachment[]>([]);
+  const [didAttachmentsLoad, setDidAttachmentsLoad] = useState<boolean>(false);
+  
+  const currentPage = useRef<number>(0);
+  const pageTokenArray = useRef<string[]>([""]);
+
   const [isAddingToCalendar, setIsAddingToCalendar] = useState<boolean>(false);
 
   const handleAddToCalendar = async (email: IEmail) => {
@@ -68,13 +71,13 @@ export default function Inbox() {
   const getEmails = async () => {
     if (status !== "authenticated" || !session?.user?.id) return;
 
-    console.log(currentPage);
+    console.log(currentPage.current);
 
     setIsSyncing(true);
     try {
       let url = "/api/emails/get";
       url = url + `?user_id=${session.user.id}`;
-      url = url + `&page_token=${pageTokenArray[currentPage]}`;
+      url = url + `&page_token=${pageTokenArray.current[currentPage.current]}`;
 
       const res = await fetch(url, {
         method: "GET",
@@ -88,12 +91,12 @@ export default function Inbox() {
       setEmails(data.messages);
       console.log(data.messages);
 
-      if (pageTokenArray.length > currentPage) {
-        const newPageTokenArray = pageTokenArray;
-        newPageTokenArray[currentPage + 1] = data.next_page_token;
-        setPageTokenArray(newPageTokenArray);
+      if (pageTokenArray.current.length > currentPage.current) {
+        const newPageTokenArray = pageTokenArray.current;
+        newPageTokenArray[currentPage.current + 1] = data.next_page_token;
+        pageTokenArray.current = newPageTokenArray;
       } else {
-        setPageTokenArray([...pageTokenArray, data.next_page_token]);
+        pageTokenArray.current = [...pageTokenArray.current, data.next_page_token];
       }
 
       toast.success(`${data.messages.length} emails retrieved.`);
@@ -172,16 +175,14 @@ export default function Inbox() {
   };
 
   const handlePrevPage = async () => {
-    setCurrentPage((prev) => prev - 1);
+    currentPage.current = currentPage.current - 1;
+    getEmails();
   };
 
   const handleNextPage = async () => {
-    setCurrentPage((prev) => prev + 1);
-  };
-
-  useEffect(() => {
+    currentPage.current = currentPage.current + 1;
     getEmails();
-  }, [currentPage]);
+  };
 
   useEffect(() => {
     const getCategories = async () => {
@@ -225,27 +226,40 @@ export default function Inbox() {
     setSelectedMail(email);
     setIsMailSelected(true);
 
-    for (const attachment of email.attachments) {
-      const res = await fetch(
-        `/api/get/attachment?user_id=${session?.user.id}&message_id=${email.message_id}&attachment_id=${attachment.attachmentId}`,
-        {
-          method: "GET",
-        }
-      );
+    const attachments = [];
 
-      const {
-        fileBuffer: { data },
-      } = await res.json();
+    try {
+      for (const attachment of email?.attachments) {
+        const res = await fetch(
+          `/api/attachment/get?user_id=${session?.user.id}&message_id=${email.message_id}&attachment_id=${attachment.attachmentId}&filename=${attachment.filename}`,
+          {
+            method: "GET",
+          }
+        );
 
-      // const tempDir = path.join(process.cwd(), "temp");
-      // if (!fs.existsSync(tempDir)) {
-      //   fs.mkdirSync(tempDir);
-      // }
-      // const localFilePath = path.join(tempDir, attachment.filename);
-      // fs.writeFileSync(localFilePath, data)
+        const {filePath: filePath} = await res.json();
 
-      console.log(data);
+        // const tempDir = path.join(process.cwd(), "temp");
+        // if (!fs.existsSync(tempDir)) {
+        //   fs.mkdirSync(tempDir);
+        // }
+        // const localFilePath = path.join(tempDir, attachment.filename);
+        // fs.writeFileSync(localFilePath, data)
+
+        attachments.push({
+          filename: attachment.filename,
+          url: filePath
+        })
+
+        console.log(filePath);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setDidAttachmentsLoad(true);
     }
+    setAttachments(attachments);
+
   };
 
   return (
@@ -283,7 +297,7 @@ export default function Inbox() {
                     key={index}
                     className={`w-full ${selectedCategory === category.name ? "bg-contrast/15" : ""} justify-start mb-2 relative group flex items-center p-3 hover:bg-contrast/15 rounded-md text-sm`}
                     onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
+                    onMouseLeave={() => setHoveredEmailId(null)}
                     onClick={() => setSelectedCategory(category.name)}
                   >
                     {category.name}
@@ -326,9 +340,9 @@ export default function Inbox() {
                 <button
                   onClick={handlePrevPage}
                   disabled={
-                    currentPage === 0 || emails.length === 0 || isSyncing
+                    currentPage.current === 0 || emails.length === 0 || isSyncing
                   }
-                  className={currentPage === 0 || isSyncing ? "opacity-50" : ""}
+                  className={currentPage.current === 0 || isSyncing ? "opacity-50" : ""}
                 >
                   <CircleArrowLeft />
                 </button>
@@ -407,7 +421,7 @@ export default function Inbox() {
         </Card>
       </div>
       {isMailSelected && (
-        <EmailView email={selectedMail} setIsMailSelected={setIsMailSelected} />
+        <EmailView email={selectedMail} setDidAttachmentsLoad={setDidAttachmentsLoad} didAttachmentsLoad={didAttachmentsLoad} attachments={attachments} setAttachments={setAttachments} setIsMailSelected={setIsMailSelected} />
       )}
     </div>
   );

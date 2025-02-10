@@ -4,6 +4,7 @@ import { cards, features } from "@/lib/constants";
 import { borel } from "@/lib/fonts";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
@@ -33,12 +34,12 @@ const Home = () => {
           <div className="text-[125px] font-semibold mt-14">
             The AI Mail Box
           </div>
-          <div className={`text-2xl `}>
+          <div className={`text-2xl`}>
             Built to make you extraordinarily productive, <br /> Mail.io is the
             best way to manage mails and mark calendars
           </div>
           <button className="bg-contrast text-anti-contrast px-5 py-3 rounded-lg">
-            Get Started
+            <Link href={"/dashboard"}>Get Started</Link>
           </button>
         </div>
       </div>
@@ -104,7 +105,7 @@ const Home = () => {
               Try <span className={`${borel.className}`}>Mail.io</span> Now
             </div>
             <button className="bg-contrast text-anti-contrast px-10 py-3 text-2xl rounded-xl">
-              Get Started
+              <Link href={"/dashboard"}>Get Started</Link>
             </button>
           </div>
           <div className="">
