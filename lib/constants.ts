@@ -58,7 +58,9 @@ export const cards = [
 ];
 
 export const navs = [
-  { title: "Dashboard", link: "/dashboard", auth: false },
+  { title: "Home", link: "/", auth: false },
+  { title: "Dashboard", link: "/dashboard", auth: true },
   { title: "Inbox", link: "/inbox", auth: true },
   { title: "Events", link: "/events", auth: true },
+  { title: "Pricing", link: "/pricing", auth: false },
 ];

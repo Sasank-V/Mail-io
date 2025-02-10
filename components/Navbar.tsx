@@ -42,11 +42,19 @@ const Navbar = () => {
         </Link>
       </button>
       <div className="flex gap-12 text-lg items-center">
-        {navs.map((nav, i) => (
-          <div key={i} className={`px-4 py-2 rounded-xl ${pathname === nav.link ? "bg-contrast text-anti-contrast" : ""}`}>
-            <Link href={nav.link}>{nav.title}</Link>
-          </div>
-        ))}
+        {
+          (status !== "authenticated") ? 
+            navs.filter((nav) => nav.auth === false).map((nav, i) => (
+              <div key={i} className={`px-4 py-2 rounded-xl ${pathname === nav.link ? "bg-contrast text-anti-contrast" : ""}`}>
+                <Link href={nav.link}>{nav.title}</Link>
+              </div>
+            )) : 
+            navs.map((nav, i) => (
+              <div key={i} className={`px-4 py-2 rounded-xl ${pathname === nav.link ? "bg-contrast text-anti-contrast" : ""}`}>
+                <Link href={nav.link}>{nav.title}</Link>
+              </div>
+            ))
+        }
       </div>
       <div className="flex justify-center items-center gap-5">
         <button className="p-2 bg-contrast text-anti-contrast rounded-full" onClick={() => setTheme((prev) => prev == "light" ? "dark" : "light")}>

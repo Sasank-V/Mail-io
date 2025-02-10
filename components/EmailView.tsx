@@ -16,9 +16,9 @@ function EmailView({
       >
         <X className="size-[35px]" />
       </button>
-      <div className="w-3/5 max-h-[75%] h-full rounded-2xl bg-background relative">
-        <div className="bg-[#3f3f3f] absolute text-contrast w-full rounded-2xl rounded-b-none flex gap-3 items-center z-20">
-          <div className="h-full border-r-background border-r-4 p-5 pr-3">
+      <div className="w-3/5 max-h-[75%] h-full rounded-2xl bg-background relative overflow-hidden">
+        <div className="bg-[#3f3f3f] absolute text-white w-full rounded-b-none flex gap-3 items-center z-20">
+          <div className="h-full border-r-black border-r-4 p-5 pr-3">
             From:{" "}
           </div>
           <div className="p-5">{email.headers.from}</div>
@@ -33,8 +33,8 @@ function EmailView({
           <div className="">{email.snippet}</div>
         )}
         </div>
-        <div className="bg-[#3f3f3f] absolute text-contrast bottom-0 w-full rounded-2xl rounded-t-none flex gap-3 items-center">
-          <div className="h-full border-r-background border-r-4 p-5 pr-3">
+        <div className="bg-[#3f3f3f] absolute text-white bottom-0 w-full rounded-t-none flex gap-3 items-center">
+          <div className="h-full border-r-black border-r-4 p-5 pr-3">
             From:{" "}
           </div>
           <div className="p-5">{email.headers.from}</div>

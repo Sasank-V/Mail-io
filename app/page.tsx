@@ -83,7 +83,7 @@ const Home = () => {
           <div className="">
             <Image
               src="/logo.svg"
-              className="inset-0 -z-10 w-full h-full -translate-y-20"
+              className={`inset-0 -z-10 w-full h-full -translate-y-20 ${theme === "light" ? "invert" : ""}`}
               alt="Sdf"
               width={100}
               height={100}
