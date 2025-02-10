@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { connect_DB } from "@/utils/DB";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
-import { defaultCategories } from "@/lib/constants";
+// import { defaultCategories } from "@/lib/constants";
 
 export const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
