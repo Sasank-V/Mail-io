@@ -17,6 +17,8 @@ import { getParsedEmail } from "@/utils/mail-parser";
 import { NextRequest } from "next/server";
 import { requireAuthNoNext } from "@/lib/authRequired";
 import { Attachment } from "@/lib/types";
+import ollama from "ollama";
+import { extractJson } from "../../../../utils/ai-stuff";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAuthNoNext(request);
@@ -71,7 +73,7 @@ export async function GET(request: NextRequest) {
       );
     }
     const eventPrompt = getEventSummaryPrompt(email.text);
-    console.log(email.attachments);
+    // console.log(email.attachments);
     const allowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"];
     const imageAttachments =
       email.attachments && Array.isArray(email.attachments)
@@ -126,7 +128,7 @@ export async function markEventInCalendarWithAttachment(
   attachment: Attachment,
   eventPrompt: string
 ) {
-  console.log(attachment.attachmentId);
+  // console.log(attachment.attachmentId);
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const attachmentRes = await gmail.users.messages.attachments.get({
     userId: "me",
@@ -142,13 +144,19 @@ export async function markEventInCalendarWithAttachment(
   }
   const localFilePath = path.join(tempDir, attachment.filename);
   fs.writeFileSync(localFilePath, fileBuffer);
-  console.log(parseImage(localFilePath));
-  const result = await askGemini(
-    eventPrompt,
-    attachment.filename,
-    "image/jpeg",
-    localFilePath
-  );
+  const result = await ollama.chat({
+    model: "llama3.2-vision:latest",
+    messages: [{ role: "user", content: eventPrompt, images: [localFilePath] }],
+  });
+  console.log(result.message.content);
+  console.log(extractJson(result.message.content));
+  // console.log(parseImage(localFilePath));
+  // const result = await askGemini(
+  //   eventPrompt,
+  //   attachment.filename,
+  //   "image/jpeg",
+  //   localFilePath
+  // );
   result.reminders = {
     useDefault: false,
     overrides: [
@@ -157,12 +165,12 @@ export async function markEventInCalendarWithAttachment(
     ],
   };
 
-  await markCalendar(result);
-  if (localFilePath) {
-    await fs.promises.unlink(localFilePath);
-    console.log(`Deleted file at ${localFilePath}`);
-  }
-  console.log("Event with Attachment Added to Calendar");
+  // await markCalendar(result);
+  // if (localFilePath) {
+  //   await fs.promises.unlink(localFilePath);
+  //   console.log(`Deleted file at ${localFilePath}`);
+  // }
+  // console.log("Event with Attachment Added to Calendar");
   return true;
 }
 

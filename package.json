@@ -47,7 +47,8 @@
     "simplex-noise": "^4.0.3",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
-    "tesseract.js": "^6.0.0"
+    "tesseract.js": "^1.0.19",
+    "tesseract.ts": "^1.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

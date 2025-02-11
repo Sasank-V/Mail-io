@@ -2,7 +2,7 @@ import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
 import { NextRequest } from "next/server";
-import { getEmailClassifyPrompt } from "@/utils/ai-stuff";
+import { extractJson, getEmailClassifyPrompt } from "@/utils/ai-stuff";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { requireAuthNoNext } from "@/lib/authRequired";
 import ollama from "ollama";
@@ -114,19 +114,4 @@ export async function GET(request: NextRequest) {
     next_page_token: data.nextPageToken,
     messages: classifiedEmails,
   });
-}
-
-function extractJson(responseText: string) {
-  // This regex matches from the first "{" to the last "}" in the string.
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    try {
-      const parsedJson = JSON.parse(jsonMatch[0]);
-      return parsedJson;
-    } catch (err) {
-      console.error("Error parsing JSON:", err);
-      return null;
-    }
-  }
-  return null;
 }

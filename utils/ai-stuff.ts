@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import { createWorker } from "tesseract.js";
+import path from "path";
+import Tesseract, { createWorker } from "tesseract.js";
 
 export async function askGemini(
   prompt: string,
@@ -117,10 +118,26 @@ Return only the JSON object with no additional text.
   `;
 };
 
-export async function parseImage(filePath: string) {
-  const worker = await createWorker("eng");
-  const ret = await worker.recognize(filePath);
-  const result = ret.data.text;
-  await worker.terminate();
-  return result;
+// export async function parseImage(filePath: string) {
+//   Tesseract.recognize(filePath)
+//     .progress(console.log)
+//     .then((res: any) => {
+//       return res;
+//     })
+//     .catch(console.error);
+// }
+
+export function extractJson(responseText: string) {
+  // This regex matches from the first "{" to the last "}" in the string.
+  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const parsedJson = JSON.parse(jsonMatch[0]);
+      return parsedJson;
+    } catch (err) {
+      console.error("Error parsing JSON:", err);
+      return null;
+    }
+  }
+  return null;
 }
