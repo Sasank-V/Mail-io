@@ -76,7 +76,7 @@ function EmailView({
       >
         <X className="p-2.5 size-[45px] hover:bg-contrast/15" />
       </button>
-      <div className="w-3/5 max-h-[75%] h-full rounded-2xl bg-background shadow-md relative overflow-y-hidden">
+      <div className="w-3/5 max-h-[90%] h-full rounded-2xl bg-background shadow-md relative overflow-y-hidden">
         <div className="bg-[#3f3f3f] absolute text-white w-full rounded-b-none flex gap-3 items-center z-20">
           <div className="h-full border-r-black border-r-4 p-5 pr-3">
             From:{" "}
