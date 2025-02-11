@@ -149,12 +149,12 @@ export async function markEventInCalendarWithAttachment(
   }
   const localFilePath = path.join(tempDir, attachment.filename);
   fs.writeFileSync(localFilePath, fileBuffer);
-  const resultLocal = await ollama.chat({
-    model: "llava:7b",
-    messages: [{ role: "user", content: eventPrompt, images: [localFilePath] }],
-  });
-  // console.log(resultLocal.message.content);
-  console.log(extractJson(resultLocal.message.content));
+  // const resultLocal = await ollama.chat({
+  //   model: "llava:7b",
+  //   messages: [{ role: "user", content: eventPrompt, images: [localFilePath] }],
+  // });
+  // // console.log(resultLocal.message.content);
+  // console.log(extractJson(resultLocal.message.content));
   const result = await askGemini(
     eventPrompt,
     attachment.filename,

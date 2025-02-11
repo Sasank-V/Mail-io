@@ -46,9 +46,12 @@ const Home = () => {
             Built to make you extraordinarily productive, <br /> Mail.io is the
             best way to manage mails and mark calendars
           </div>
-          <button className="bg-contrast text-anti-contrast px-5 py-3 rounded-lg">
+          <button
+            className="bg-contrast text-anti-contrast px-5 py-3 rounded-lg"
+            onClick={handleGetStarted}
+          >
             {/* <Link href={"/dashboard"}>Get Started</Link> */}
-            <button onClick={handleGetStarted}>Get Started</button>
+            Get Started
           </button>
         </div>
       </div>

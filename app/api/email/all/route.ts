@@ -2,7 +2,11 @@ import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
 import { NextRequest } from "next/server";
-import { extractJson, getEmailClassifyPrompt } from "@/utils/ai-stuff";
+import {
+  askGemini,
+  extractJson,
+  getEmailClassifyPrompt,
+} from "@/utils/ai-stuff";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { requireAuthNoNext } from "@/lib/authRequired";
 import ollama from "ollama";
@@ -82,12 +86,13 @@ export async function GET(request: NextRequest) {
         user.categories
       );
 
-      const res = await ollama.chat({
-        model: "qwen2.5:0.5b",
-        messages: [{ role: "user", content: prompt }],
-      });
-      console.log(res.message.content);
-      const response = extractJson(res.message.content);
+      // const res = await ollama.chat({
+      //   model: "qwen2.5:0.5b",
+      //   messages: [{ role: "user", content: prompt }],
+      // });
+      const response = await askGemini(prompt);
+      // console.log(res.message.content);
+      // const response = extractJson(res.message.content);
       if (!response) {
         return Response.json({
           success: false,
