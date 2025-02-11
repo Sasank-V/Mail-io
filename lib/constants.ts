@@ -70,3 +70,42 @@ export const navs = [
   { title: "Events", link: "/events", auth: true },
   { title: "Pricing", link: "/pricing", auth: false },
 ];
+
+export const tiers = [
+  {
+    name: 'Starter',
+    price: 9,
+    features: [
+      'Basic email classification',
+      'Local AI model support',
+      '1000 classifications/month',
+      'Essential spam filtering'
+    ],
+    aiModel: 'qwen-2.5',
+  },
+  {
+    name: 'Pro',
+    price: 29,
+    features: [
+      'Advanced email categorization',
+      'Enhanced spam & phishing detection',
+      '5000 classifications/month',
+      'Custom label training',
+      'Faster processing speed'
+    ],
+    aiModel: 'gemma',
+    popular: true,
+  },
+  {
+    name: 'Enterprise',
+    price: 99,
+    features: [
+      'Custom AI model fine-tuning',
+      'Unlimited email classifications',
+      'Dedicated on-premise deployment',
+      'API access for integration',
+      '24/7 priority support'
+    ],
+    aiModel: 'deepseekv3',
+  },
+]
