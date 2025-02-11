@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   if (page_token) {
     url.searchParams.append("pageToken", page_token);
   }
-  url.searchParams.append("maxResults", "5");
+  url.searchParams.append("maxResults", "15");
   url.searchParams.append("q", "in:inbox -in:sent");
   oauth2Client.setCredentials({
     access_token: user.access_token,
@@ -98,6 +98,7 @@ export async function GET(request: NextRequest) {
         id: message.id,
         category: response.type,
         marked: false,
+        event_ids: [],
       });
       category = response.type;
     }

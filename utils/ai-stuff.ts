@@ -83,9 +83,23 @@ Analyze the above email data carefully and return only the JSON object with the 
   `;
 };
 
-export const getEventSummaryPrompt = (parsedData) => {
+export const getEventSummaryPrompt = (parsedDataDescription) => {
   return `
-You are an expert Event Detail Extractor. Your task is to analyze the following email data (provided as parsed JSON) and extract all relevant event details if the email describes an event. Please extract and output exactly the following fields in the specified JSON format:
+You are an expert Event Detail Extractor with advanced vision capabilities. Your task is to analyze the attached image—which contains visual information about an event—and extract all relevant event details. Based solely on the image content (and any accompanying description provided below), you must determine the following fields:
+
+- "summary": A concise title or summary of the event.
+- "location": The location or venue where the event is taking place.
+- "description": A detailed description of the event.
+- "start": An object with:
+    - "dateTime": The starting date and time of the event in RFC3339 format (e.g., "YYYY-MM-DDTHH:MM:SS-XX:XX").
+    - "timeZone": The time zone of the start time (e.g., "America/Los_Angeles").
+- "end": An object with:
+    - "dateTime": The ending date and time of the event in RFC3339 format.
+    - "timeZone": The time zone of the end time.
+
+If any field cannot be determined from the image, set its value to an empty string.
+
+Your final response must be exactly a valid JSON object in the following format with no additional text, explanations, or formatting:
 
 {
   "summary": "Event summary",
@@ -98,23 +112,13 @@ You are an expert Event Detail Extractor. Your task is to analyze the following 
   "end": {
     "dateTime": "YYYY-MM-DDTHH:MM:SS-XX:XX",
     "timeZone": "TimeZone"
-  },
-  "reminders": {
-    "useDefault": false,
-    "overrides": [
-      {"method": "email", "minutes": 1440},
-      {"method": "popup", "minutes": 10}
-    ]
   }
 }
 
-If a particular field cannot be determined from the email, set its value to an empty string (for text fields) or false (for booleans) as appropriate.
+Below is a brief textual description to supplement the image (if available):
+${typeof parsedDataDescription === "object" ? JSON.stringify(parsedDataDescription, null, 2) : parsedDataDescription}
 
-Below is the parsed email data:
-
-${typeof parsedData === "object" ? JSON.stringify(parsedData, null, 2) : parsedData}
-
-Return only the JSON object with no additional text.
+The image is attached along with this prompt. Analyze the visual content carefully and return only the JSON object with the extracted event details.
   `;
 };
 

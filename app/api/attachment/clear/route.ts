@@ -24,9 +24,8 @@ export async function GET(request: NextRequest) {
         message: "User Not Found",
       });
     }
-    if (fs.existsSync(filepath)) {
-      await fs.promises.unlink(filepath);
-    }
+
+    if (fs.existsSync(filepath)) await fs.promises.unlink(filepath);
     return Response.json({
       success: true,
       messages: "Attachment Deleted in Buffer",

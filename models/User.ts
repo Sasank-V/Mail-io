@@ -17,6 +17,7 @@ export interface IUser extends Document {
     id: string;
     category: string;
     marked: boolean;
+    event_ids: string[];
   }[];
 }
 
@@ -67,9 +68,10 @@ const UserSchema = new Schema<IUser>({
         id: String,
         category: String,
         marked: Boolean,
+        event_ids: [String],
       },
     ],
-    default: [{ id: "1", category: "Test", marked: false }],
+    default: [{ id: "1", category: "Test", marked: false, event_ids: [] }],
   },
 });
 
