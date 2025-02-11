@@ -9,14 +9,14 @@ import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
 import {
   askGemini,
+  extractJson,
   getEventSummaryPrompt,
-  parseImage,
-  ParseImage,
 } from "@/utils/ai-stuff";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { NextRequest } from "next/server";
 import { requireAuthNoNext } from "@/lib/authRequired";
 import { Attachment } from "@/lib/types";
+import ollama from "ollama";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAuthNoNext(request);
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       );
     }
     const eventPrompt = getEventSummaryPrompt(email.text);
-    console.log(email.attachments);
+    // console.log(email.attachments);
     const allowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"];
     const imageAttachments =
       email.attachments && Array.isArray(email.attachments)
@@ -83,17 +83,20 @@ export async function GET(request: NextRequest) {
             );
           })
         : null;
-
+    const event_ids = [];
     if (imageAttachments) {
       for (const attachment of imageAttachments) {
-        await markEventInCalendarWithAttachment(
+        const event_id = await markEventInCalendarWithAttachment(
           message_id,
           attachment,
           eventPrompt
         );
+        event_ids.push(event_id);
       }
     } else {
       const result = await askGemini(eventPrompt);
+      result.start.timeZone = result.start.timeZone || "Asia/Kolkata";
+      result.end.timeZone = result.end.timeZone || "Asia/Kolkata";
       result.reminders = {
         useDefault: false,
         overrides: [
@@ -101,12 +104,16 @@ export async function GET(request: NextRequest) {
           { method: "popup", minutes: 20 },
         ],
       };
-      await markCalendar(result);
+      console.log(result);
+      const event_id = await markCalendar(result);
+      event_ids.push(event_id);
+      console.log(result);
     }
 
     user.messages = user.messages.filter((msg) => msg.id != message_id);
     if (msg) {
       msg.marked = true;
+      msg.event_ids = event_ids;
     }
     user.messages.push(msg!);
     await user.save();
@@ -126,7 +133,7 @@ export async function markEventInCalendarWithAttachment(
   attachment: Attachment,
   eventPrompt: string
 ) {
-  console.log(attachment.attachmentId);
+  // console.log(attachment.attachmentId);
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const attachmentRes = await gmail.users.messages.attachments.get({
     userId: "me",
@@ -142,7 +149,12 @@ export async function markEventInCalendarWithAttachment(
   }
   const localFilePath = path.join(tempDir, attachment.filename);
   fs.writeFileSync(localFilePath, fileBuffer);
-  console.log(parseImage(localFilePath));
+  const resultLocal = await ollama.chat({
+    model: "llava:7b",
+    messages: [{ role: "user", content: eventPrompt, images: [localFilePath] }],
+  });
+  // console.log(resultLocal.message.content);
+  console.log(extractJson(resultLocal.message.content));
   const result = await askGemini(
     eventPrompt,
     attachment.filename,
@@ -156,14 +168,17 @@ export async function markEventInCalendarWithAttachment(
       { method: "popup", minutes: 20 },
     ],
   };
+  result.start.timeZone = result.start.timeZone || "Asia/Kolkata";
+  result.end.timeZone = result.end.timeZone || "Asia/Kolkata";
+  console.log(result);
 
-  await markCalendar(result);
+  const event_id = await markCalendar(result);
   if (localFilePath) {
     await fs.promises.unlink(localFilePath);
     console.log(`Deleted file at ${localFilePath}`);
   }
   console.log("Event with Attachment Added to Calendar");
-  return true;
+  return event_id;
 }
 
 export async function markCalendar(result) {
@@ -183,5 +198,6 @@ export async function markCalendar(result) {
       }
     );
   });
-  await eventInsertPromise;
+  const res = await eventInsertPromise;
+  return res.data.id;
 }

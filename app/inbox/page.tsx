@@ -42,7 +42,8 @@ export default function Inbox() {
 
   const [isMailSelected, setIsMailSelected] = useState<boolean>(false);
   const [selectedMail, setSelectedMail] = useState<Partial<IEmail>>({});
-  const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false);
+  const [isNewCategoryModalOpen, setIsCategoryModalOpen] =
+    useState<boolean>(false);
   const [hoveredEmailId, setHoveredEmailId] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [attachments, setAttachments] = useState<IAttachment[]>([]);
@@ -93,7 +94,9 @@ export default function Inbox() {
       );
 
       if (!res.ok) {
-        toast.error("Server Error adding to calendar")
+        toast.error("Server Error adding to calendar");
+      } else {
+        toast.success(res.message!);
       }
     } catch (error) {
       toast.error("Error adding to calendar");
@@ -125,9 +128,9 @@ export default function Inbox() {
 
       for (const msg of data.messages) {
         mergedEmails.push({
-          ...msg, 
-          headers: msg.headers[0]
-        })
+          ...msg,
+          headers: msg.headers[0],
+        });
       }
 
       setEmails(mergedEmails);
@@ -272,12 +275,12 @@ export default function Inbox() {
           }
         );
 
-        const {filePath: filePath} = await res.json();
+        const { filePath: filePath } = await res.json();
 
         attachments.push({
           filename: attachment.filename,
-          url: filePath
-        })
+          url: filePath,
+        });
       }
     } catch (error) {
       toast.error("Error loading attachments");
@@ -285,7 +288,6 @@ export default function Inbox() {
       setDidAttachmentsLoad(true);
     }
     setAttachments(attachments);
-
   };
 
   return (
@@ -400,7 +402,11 @@ export default function Inbox() {
                         className="relative flex items-center space-x-4 p-4 hover:bg-contrast/15 w-full rounded-lg cursor-pointer"
                       >
                         <div className="w-12 h-12 rounded-full bg-contrast flex items-center justify-center text-primary-foreground font-semibold">
-                          {email.headers.from.slice(6).replaceAll("\"", "").replaceAll("'", "").charAt(0)}
+                          {email.headers.from
+                            .slice(6)
+                            .replaceAll('"', "")
+                            .replaceAll("'", "")
+                            .charAt(0)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold truncate">
@@ -464,7 +470,14 @@ export default function Inbox() {
         </Card>
       </div>
       {isMailSelected && (
-        <EmailView email={selectedMail} setDidAttachmentsLoad={setDidAttachmentsLoad} didAttachmentsLoad={didAttachmentsLoad} attachments={attachments} setAttachments={setAttachments} setIsMailSelected={setIsMailSelected} />
+        <EmailView
+          email={selectedMail}
+          setDidAttachmentsLoad={setDidAttachmentsLoad}
+          didAttachmentsLoad={didAttachmentsLoad}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          setIsMailSelected={setIsMailSelected}
+        />
       )}
     </div>
   );

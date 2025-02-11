@@ -37,6 +37,20 @@ export async function GET(request: NextRequest) {
       calendarId: "primary",
       eventId: event_id,
     });
+    const msg = user.messages.find((msg) => msg.event_ids.includes(event_id));
+    user.messages = user.messages.filter(
+      (msg) => !msg.event_ids.includes(event_id)
+    );
+    if (msg) {
+      if (msg.event_ids.length == 1) {
+        msg.event_ids = [];
+        msg.marked = false;
+      } else {
+        msg.event_ids = msg?.event_ids.filter((id) => id != event_id);
+      }
+      user.messages.push(msg);
+    }
+    await user.save();
     return Response.json({
       success: true,
       message: "Event Deleted Successfully",

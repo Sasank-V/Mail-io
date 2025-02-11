@@ -4,8 +4,7 @@ import { cards, features } from "@/lib/constants";
 import { borel } from "@/lib/fonts";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -13,12 +12,21 @@ const Home = () => {
   const { theme } = useTheme();
   const searchParams = useSearchParams();
   const authRequired = searchParams.get("auth") === "required";
+  const router = useRouter();
 
   useEffect(() => {
     if (authRequired) {
-      toast.error("You need to sign in to access that page!");
+      toast.warn("You need to sign in to access that page!");
     }
   }, [authRequired]);
+
+  const handleGetStarted = () => {
+    if (authRequired) {
+      toast.warn("You need to Sign In First");
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   return (
     <div className="px-8 w-[100vw] h-fit flex flex-col gap-10 items-center pb-10">
@@ -39,7 +47,8 @@ const Home = () => {
             best way to manage mails and mark calendars
           </div>
           <button className="bg-contrast text-anti-contrast px-5 py-3 rounded-lg">
-            <Link href={"/dashboard"}>Get Started</Link>
+            {/* <Link href={"/dashboard"}>Get Started</Link> */}
+            <button onClick={handleGetStarted}>Get Started</button>
           </button>
         </div>
       </div>
@@ -62,20 +71,26 @@ const Home = () => {
                 height={100}
               />
               <div className="w-[90%] rounded-xl overflow-hidden">
-                {
-                  feature.type === "video" ?
+                {feature.type === "video" ? (
                   <video
-                  src={feature.src}
-                  className=""
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  disablePictureInPicture
-                  controlsList="nodownload nofullscreen noremoteplayback"
-                  /> :
-                  <Image src={feature.src} height={1000} width={1000} alt={feature.title} className="w-full h-full bg-red-300" />
-                }
+                    src={feature.src}
+                    className=""
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    disablePictureInPicture
+                    controlsList="nodownload nofullscreen noremoteplayback"
+                  />
+                ) : (
+                  <Image
+                    src={feature.src}
+                    height={1000}
+                    width={1000}
+                    alt={feature.title}
+                    className="w-full h-full bg-red-300"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -104,8 +119,11 @@ const Home = () => {
             <div className="text-[120px] font-semibold">
               Try <span className={`${borel.className}`}>Mail.io</span> Now
             </div>
-            <button className="bg-contrast text-anti-contrast px-10 py-3 text-2xl rounded-xl">
-              <Link href={"/dashboard"}>Get Started</Link>
+            <button
+              onClick={handleGetStarted}
+              className="bg-contrast text-anti-contrast px-10 py-3 text-2xl rounded-xl"
+            >
+              Get Started
             </button>
           </div>
           <div className="">
