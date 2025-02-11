@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
+import { createWorker } from "tesseract.js";
 
 export async function askGemini(
   prompt: string,
@@ -115,3 +116,11 @@ ${typeof parsedData === "object" ? JSON.stringify(parsedData, null, 2) : parsedD
 Return only the JSON object with no additional text.
   `;
 };
+
+export async function parseImage(filePath: string) {
+  const worker = await createWorker("eng");
+  const ret = await worker.recognize(filePath);
+  const result = ret.data.text;
+  await worker.terminate();
+  return result;
+}

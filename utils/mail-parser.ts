@@ -28,25 +28,30 @@ export async function getParsedEmail(
       userId: "me",
       id: messageId,
       format: "raw",
-      // fields:
-      //   "snippet,payload(headers(name,value),mimeType,body(attachmentId,data),parts(partId, mimeType, filename, body(attachmentId,data)))",
+    });
+    const resFull = await gmail.users.messages.get({
+      userId: "me",
+      id: messageId,
+      format: "full",
+      fields:
+        "payload(parts(partId, mimeType, filename, body(attachmentId,data)))",
     });
     const rawMessage = res.data.raw;
     const decodedMessage = Buffer.from(rawMessage, "base64");
     const parsed = await simpleParser(decodedMessage);
-    // console.log("Directly parsed email:", parsed);
+    // console.log(rawMessage);
+    // console.log("Directly parsed email:", parsed.attachments);
+    // console.log(resFull.data.payload?.parts);
 
     //Get Headers
     const headersArray = parsed.headerLines.concat([]) || [];
     const filteredHeaders = extractDesiredHeaders(headersArray);
+    const attachments = await getAttachmentsFromFull(resFull.data.payload!);
+    // console.log(attachments);
 
     const filteredEmail = {
       headers: filteredHeaders,
-      attachments: parsed.attachments.map((att) => ({
-        contentType: att.contentType,
-        filename: att.filename,
-        attachmentId: att.cid,
-      })),
+      attachments,
       text: parsed.text,
       html: parsed.html,
     };
@@ -88,62 +93,40 @@ export function extractDesiredHeaders(
     subject: (result["subject"] as string) || "",
     from: (result["from"] as string) || "",
     to: (result["to"] as string) || "",
+    cc: (result["cc"] as string) || "",
   };
 }
 
-// async function processPayload(
-//   payload: gmail_v1.Schema$MessagePart | gmail_v1.Schema$MessagePartBody
-// ) {
-//   let bodyText = "";
-//   let bodyHTML = "";
-//   let attachments: Attachment[] = [];
+async function getAttachmentsFromFull(
+  payload: gmail_v1.Schema$MessagePart | gmail_v1.Schema$MessagePartBody
+) {
+  let attachments: Attachment[] = [];
 
-//   if (payload.parts && payload.parts.length) {
-//     for (const part of payload.parts) {
-//       if (part.mimeType && part.mimeType.startsWith("multipart/")) {
-//         const nested = await processPayload(part);
-//         bodyText += nested.bodyText;
-//         bodyHTML += nested.bodyHTML;
-//         attachments = attachments.concat(nested.attachments);
-//       } else if (part.mimeType === "message/rfc822") {
-//         // Forwarded message: parse the nested message
-//         const nested = await processPayload(part.body ? part.body : part);
-//         bodyText += nested.bodyText;
-//         bodyHTML += nested.bodyHTML;
-//         attachments = attachments.concat(nested.attachments);
-//       } else if (part.mimeType === "text/plain") {
-//         if (part.body && part.body.data) {
-//           const text = Buffer.from(part.body.data, "base64").toString("utf8");
-//           bodyText += text + "\n";
-//         }
-//       } else if (part.mimeType === "text/html") {
-//         if (part.body && part.body.data) {
-//           const html = Buffer.from(part.body.data, "base64").toString("utf8");
-//           bodyHTML += html;
-//         }
-//       } else {
-//         if (part.body && part.body.attachmentId) {
-//           attachments.push({
-//             filename: part.filename || "",
-//             attachmentId: part.body.attachmentId,
-//           });
-//         }
-//       }
-//     }
-//   } else {
-//     if (
-//       payload.mimeType === "text/plain" &&
-//       payload.body &&
-//       payload.body.data
-//     ) {
-//       bodyText = Buffer.from(payload.body.data, "base64").toString("utf8");
-//     } else if (
-//       payload.mimeType === "text/html" &&
-//       payload.body &&
-//       payload.body.data
-//     ) {
-//       bodyHTML = Buffer.from(payload.body.data, "base64").toString("utf8");
-//     }
-//   }
-//   return { bodyText, bodyHTML, attachments };
-// }
+  // Ensure payload is defined and check if it has a 'parts' property
+  if (
+    payload &&
+    "parts" in payload &&
+    Array.isArray(payload.parts) &&
+    payload.parts.length > 0
+  ) {
+    for (const part of payload.parts) {
+      if (part.mimeType && part.mimeType.startsWith("multipart/")) {
+        const nested = await getAttachmentsFromFull(part);
+        attachments = attachments.concat(nested);
+      } else if (part.body && part.body.attachmentId) {
+        attachments.push({
+          filename: part.filename || "",
+          attachmentId: part.body.attachmentId,
+        });
+      }
+    }
+  } else if (payload && payload.body && payload.body.attachmentId) {
+    // If the payload does not have parts but contains an attachment
+    attachments.push({
+      filename: "filename" in payload ? payload.filename || "" : "",
+      attachmentId: payload.body.attachmentId,
+    });
+  }
+
+  return attachments;
+}
