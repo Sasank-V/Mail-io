@@ -47,8 +47,6 @@ export default function Inbox() {
   const [isAddingToCalendar, setIsAddingToCalendar] = useState<boolean>(false);
 
   const handleAddToCalendar = async (email: IEmail) => {
-    console.log("Adding to calendar:", email);
-
     setIsAddingToCalendar(true);
     try {
       const res = await fetch(
@@ -59,10 +57,10 @@ export default function Inbox() {
       );
 
       if (!res.ok) {
-        console.log("Error fetching");
+        toast.error("Server Error adding to calendar")
       }
     } catch (error) {
-      console.log("Error adding to calendar");
+      toast.error("Error adding to calendar");
     } finally {
       setIsAddingToCalendar(false);
     }
@@ -71,11 +69,9 @@ export default function Inbox() {
   const getEmails = async () => {
     if (status !== "authenticated" || !session?.user?.id) return;
 
-    console.log(currentPage.current);
-
     setIsSyncing(true);
     try {
-      let url = "/api/emails/get";
+      let url = "/api/email/all";
       url = url + `?user_id=${session.user.id}`;
       url = url + `&page_token=${pageTokenArray.current[currentPage.current]}`;
 
@@ -88,8 +84,17 @@ export default function Inbox() {
       }
 
       const data = await res.json();
-      setEmails(data.messages);
-      console.log(data.messages);
+
+      const mergedEmails = [];
+
+      for (const msg of data.messages) {
+        mergedEmails.push({
+          ...msg, 
+          headers: msg.headers[0]
+        })
+      }
+
+      setEmails(mergedEmails);
 
       if (pageTokenArray.current.length > currentPage.current) {
         const newPageTokenArray = pageTokenArray.current;
@@ -101,8 +106,7 @@ export default function Inbox() {
 
       toast.success(`${data.messages.length} emails retrieved.`);
     } catch (error) {
-      console.error("Error fetching emails:", error);
-      toast("There was an error syncing your emails. Please try again.");
+      toast.error("There was an error syncing your emails. Please try again.");
     } finally {
       setIsSyncing(false);
     }
@@ -113,8 +117,6 @@ export default function Inbox() {
     description: string;
   }) => {
     if (status !== "authenticated" || !session?.user?.id) return;
-
-    console.log(newCategory);
 
     try {
       const res = await fetch(`/api/category/update`, {
@@ -129,13 +131,13 @@ export default function Inbox() {
       });
 
       if (!res.ok) {
-        console.log("Update Categories Failed");
+        toast.error("Update Categories Failed");
       }
 
       setCategories([...categories, newCategory]);
       setIsCategoryModalOpen(false);
     } catch (error) {
-      console.log("Error updating Categories");
+      toast.error("Error updating Categories");
     }
   };
 
@@ -150,8 +152,6 @@ export default function Inbox() {
       (category) => category.name !== name
     );
 
-    console.log(newCategories);
-
     try {
       const res = await fetch(`/api/category/update`, {
         method: "POST",
@@ -165,12 +165,12 @@ export default function Inbox() {
       });
 
       if (!res.ok) {
-        console.log("Delete Categories Failed");
+        toast.error("Delete Categories Failed");
       }
 
       setCategories(newCategories);
     } catch (error) {
-      console.log("Error deleting Categories");
+      toast.error("Error deleting Categories");
     }
   };
 
@@ -204,10 +204,9 @@ export default function Inbox() {
 
         if (data) {
           setCategories([...data.categories]);
-          console.log(data.categories);
         }
       } catch (error) {
-        console.log("Error getting categories");
+        toast.error("Error getting categories");
       }
     };
 
@@ -243,11 +242,9 @@ export default function Inbox() {
           filename: attachment.filename,
           url: filePath
         })
-
-        console.log(filePath);
       }
     } catch (error) {
-      console.log(error);
+      toast.error("Error loading attachments");
     } finally {
       setDidAttachmentsLoad(true);
     }
@@ -290,7 +287,7 @@ export default function Inbox() {
                     key={index}
                     className={`w-full ${selectedCategory === category.name ? "bg-contrast/15" : ""} justify-start mb-2 relative group flex items-center p-3 hover:bg-contrast/15 rounded-md text-sm`}
                     onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredEmailId(null)}
+                    onMouseLeave={() => setHoveredIndex(null)}
                     onClick={() => setSelectedCategory(category.name)}
                   >
                     {category.name}
@@ -367,7 +364,7 @@ export default function Inbox() {
                         className="relative flex items-center space-x-4 p-4 hover:bg-contrast/15 w-full rounded-lg cursor-pointer"
                       >
                         <div className="w-12 h-12 rounded-full bg-contrast flex items-center justify-center text-primary-foreground font-semibold">
-                          {email.headers.from.charAt(0)}
+                          {email.headers.from.slice(6).replaceAll("\"", "").replaceAll("'", "").charAt(0)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold truncate">
