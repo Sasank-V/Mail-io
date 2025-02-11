@@ -9,6 +9,13 @@ import {
   CircleArrowLeft,
   CircleArrowRight,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useTheme } from "next-themes";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +29,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import SyncPrompt from "@/components/EmptyEmails";
 import { IEmail, ICategory, IAttachment } from "@/lib/types";
 import EmailView from "@/components/EmailView";
+import { useEmailStore } from "@/store/emailStore";
 
 export default function Inbox() {
   const { theme } = useTheme();
@@ -30,7 +38,6 @@ export default function Inbox() {
   const [isSyncing, setIsSyncing] = useState(false);
   const { data: session, status } = useSession();
 
-  const [emails, setEmails] = useState<IEmail[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
 
   const [isMailSelected, setIsMailSelected] = useState<boolean>(false);
@@ -41,11 +48,40 @@ export default function Inbox() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [attachments, setAttachments] = useState<IAttachment[]>([]);
   const [didAttachmentsLoad, setDidAttachmentsLoad] = useState<boolean>(false);
-
-  const currentPage = useRef<number>(0);
-  const pageTokenArray = useRef<string[]>([""]);
-
   const [isAddingToCalendar, setIsAddingToCalendar] = useState<boolean>(false);
+
+  const { 
+    emails, 
+    setEmails, 
+    currentPage, 
+    setCurrentPage, 
+    pageTokenArray, 
+    setPageTokenArray 
+  } = useEmailStore();
+
+  const handleCategoryChange = async (emailId: string, newCategory: string) => {
+    const emailToUpdate = emails.find(email => email.message_id === emailId);
+    if (!emailToUpdate) return;
+
+    try {
+      const res = await fetch(`/api/email/category/update?user_id=${session?.user.id}&message_id=${emailId}&category=${newCategory}`);
+
+      if (!res.ok) {
+        throw new Error('Failed to update category');
+      }
+
+      setEmails(emails.map(email =>
+        email.message_id === emailId
+          ? { ...email, category: newCategory }
+          : email
+      ));
+
+
+      toast.success('Category updated successfully');
+    } catch (error) {
+      toast.error('Failed to update category');
+    }
+  };
 
   const handleAddToCalendar = async (email: IEmail) => {
     setIsAddingToCalendar(true);
@@ -76,7 +112,7 @@ export default function Inbox() {
     try {
       let url = "/api/email/all";
       url = url + `?user_id=${session.user.id}`;
-      url = url + `&page_token=${pageTokenArray.current[currentPage.current]}`;
+      url = url + `&page_token=${pageTokenArray[currentPage]}`;
 
       const res = await fetch(url, {
         method: "GET",
@@ -99,15 +135,12 @@ export default function Inbox() {
 
       setEmails(mergedEmails);
 
-      if (pageTokenArray.current.length > currentPage.current) {
-        const newPageTokenArray = pageTokenArray.current;
-        newPageTokenArray[currentPage.current + 1] = data.next_page_token;
-        pageTokenArray.current = newPageTokenArray;
+      if (pageTokenArray.length > currentPage) {
+        const newPageTokenArray = pageTokenArray;
+        newPageTokenArray[currentPage + 1] = data.next_page_token;
+        setPageTokenArray(newPageTokenArray);
       } else {
-        pageTokenArray.current = [
-          ...pageTokenArray.current,
-          data.next_page_token,
-        ];
+        setPageTokenArray([...pageTokenArray, data.next_page_token]);
       }
 
       toast.success(`${data.messages.length} emails retrieved.`);
@@ -181,12 +214,12 @@ export default function Inbox() {
   };
 
   const handlePrevPage = async () => {
-    currentPage.current = currentPage.current - 1;
+    setCurrentPage(currentPage - 1);
     getEmails();
   };
 
   const handleNextPage = async () => {
-    currentPage.current = currentPage.current + 1;
+    setCurrentPage(currentPage + 1);
     getEmails();
   };
 
@@ -335,13 +368,9 @@ export default function Inbox() {
                 <button
                   onClick={handlePrevPage}
                   disabled={
-                    currentPage.current === 0 ||
-                    emails.length === 0 ||
-                    isSyncing
+                    currentPage === 0 || emails.length === 0 || isSyncing
                   }
-                  className={
-                    currentPage.current === 0 || isSyncing ? "opacity-50" : ""
-                  }
+                  className={currentPage === 0 || isSyncing ? "opacity-50" : ""}
                 >
                   <CircleArrowLeft />
                 </button>
@@ -390,13 +419,30 @@ export default function Inbox() {
                             {email.snippet}
                           </p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right" onClick={(e) => e.stopPropagation()}>
                           <p className="text-sm text-muted-foreground">
                             {formatDate(email.headers.date)}
                           </p>
-                          <Badge variant="secondary" className="mt-1">
-                            {email.category}
-                          </Badge>
+                          <Select
+                            defaultValue={email.category}
+                            onValueChange={(value) => {
+                              handleCategoryChange(email.message_id, value);
+                            }}
+                          >
+                            <SelectTrigger className="h-8 w-32">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.map((category) => (
+                                <SelectItem 
+                                  key={category.name} 
+                                  value={category.name}
+                                >
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
 
                         {email.category === "Events" &&
