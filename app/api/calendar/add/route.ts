@@ -7,7 +7,12 @@ import { google } from "googleapis";
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
-import { askGemini, getEventSummaryPrompt } from "@/utils/ai-stuff";
+import {
+  askGemini,
+  getEventSummaryPrompt,
+  parseImage,
+  ParseImage,
+} from "@/utils/ai-stuff";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { NextRequest } from "next/server";
 import { requireAuthNoNext } from "@/lib/authRequired";
@@ -65,8 +70,8 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
-    const eventPrompt = getEventSummaryPrompt(JSON.stringify(email));
-
+    const eventPrompt = getEventSummaryPrompt(email.text);
+    console.log(email.attachments);
     const allowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"];
     const imageAttachments =
       email.attachments && Array.isArray(email.attachments)
@@ -121,6 +126,7 @@ export async function markEventInCalendarWithAttachment(
   attachment: Attachment,
   eventPrompt: string
 ) {
+  console.log(attachment.attachmentId);
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const attachmentRes = await gmail.users.messages.attachments.get({
     userId: "me",
@@ -136,7 +142,7 @@ export async function markEventInCalendarWithAttachment(
   }
   const localFilePath = path.join(tempDir, attachment.filename);
   fs.writeFileSync(localFilePath, fileBuffer);
-  // console.log(attachment);
+  console.log(parseImage(localFilePath));
   const result = await askGemini(
     eventPrompt,
     attachment.filename,

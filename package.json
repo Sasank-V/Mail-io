@@ -46,7 +46,8 @@
     "react-toastify": "^11.0.3",
     "simplex-noise": "^4.0.3",
     "tailwind-merge": "^3.0.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tesseract.js": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
