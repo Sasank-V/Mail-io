@@ -21,8 +21,8 @@ export interface IAttachment {
 }
 
 export interface IEmailCategoryNumber {
-  name: string,
-  count: number
+  name: string;
+  count: number;
 }
 
 export interface ICategory {
@@ -33,4 +33,10 @@ export interface ICategory {
 export interface Attachment {
   filename: string;
   attachmentId: string;
+}
+
+export interface APIResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
 }

@@ -1,7 +1,6 @@
+import { ICategory } from "@/lib/types";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleAIFileManager } from "@google/generative-ai/server";
-import path from "path";
-import Tesseract, { createWorker } from "tesseract.js";
 
 export async function askGemini(
   prompt: string,
@@ -46,7 +45,10 @@ export async function askGemini(
   }
 }
 
-export const getEmailClassifyPrompt = (parsedData, userCategories) => {
+export const getEmailClassifyPrompt = (
+  parsedData: string,
+  userCategories: ICategory[]
+) => {
   // Build a detailed list of categories with their descriptions.
   const categoriesText = userCategories
     .map((category) => {
@@ -83,7 +85,7 @@ Analyze the above email data carefully and return only the JSON object with the 
   `;
 };
 
-export const getEventSummaryPrompt = (parsedDataDescription) => {
+export const getEventSummaryPrompt = (parsedDataDescription: string) => {
   return `
 You are an expert Event Detail Extractor with advanced vision capabilities. Your task is to analyze the attached image—which contains visual information about an event—and extract all relevant event details. Based solely on the image content (and any accompanying description provided below), you must determine the following fields:
 

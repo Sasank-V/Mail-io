@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import {
   Search,
@@ -16,11 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTheme } from "next-themes";
+// import { useTheme } from "next-themes";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDate } from "@/utils/formatDate";
 import { toast } from "react-toastify";
@@ -32,7 +32,7 @@ import EmailView from "@/components/EmailView";
 import { useEmailStore } from "@/store/emailStore";
 
 export default function Inbox() {
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
@@ -50,36 +50,40 @@ export default function Inbox() {
   const [didAttachmentsLoad, setDidAttachmentsLoad] = useState<boolean>(false);
   const [isAddingToCalendar, setIsAddingToCalendar] = useState<boolean>(false);
 
-  const { 
-    emails, 
-    setEmails, 
-    currentPage, 
-    setCurrentPage, 
-    pageTokenArray, 
-    setPageTokenArray 
+  const {
+    emails,
+    setEmails,
+    currentPage,
+    setCurrentPage,
+    pageTokenArray,
+    setPageTokenArray,
   } = useEmailStore();
 
   const handleCategoryChange = async (emailId: string, newCategory: string) => {
-    const emailToUpdate = emails.find(email => email.message_id === emailId);
+    const emailToUpdate = emails.find((email) => email.message_id === emailId);
     if (!emailToUpdate) return;
 
     try {
-      const res = await fetch(`/api/email/category/update?user_id=${session?.user.id}&message_id=${emailId}&category=${newCategory}`);
+      const res = await fetch(
+        `/api/email/category/update?user_id=${session?.user.id}&message_id=${emailId}&category=${newCategory}`
+      );
 
       if (!res.ok) {
-        throw new Error('Failed to update category');
+        throw new Error("Failed to update category");
       }
 
-      setEmails(emails.map(email =>
-        email.message_id === emailId
-          ? { ...email, category: newCategory }
-          : email
-      ));
+      setEmails(
+        emails.map((email) =>
+          email.message_id === emailId
+            ? { ...email, category: newCategory }
+            : email
+        )
+      );
 
-
-      toast.success('Category updated successfully');
+      toast.success("Category updated successfully");
     } catch (error) {
-      toast.error('Failed to update category');
+      console.log(error);
+      toast.error("Failed to update category");
     }
   };
 
@@ -96,9 +100,10 @@ export default function Inbox() {
       if (!res.ok) {
         toast.error("Server Error adding to calendar");
       } else {
-        toast.success(res.message!);
+        toast.success("Event Addedd Successfully");
       }
     } catch (error) {
+      console.log(error);
       toast.error("Error adding to calendar");
     } finally {
       setIsAddingToCalendar(false);
@@ -146,6 +151,7 @@ export default function Inbox() {
       toast.success(`${data.messages.length} emails retrieved.`);
     } catch (error) {
       toast.error("There was an error syncing your emails. Please try again.");
+      console.log("Error while getting emails: ", error);
     } finally {
       setIsSyncing(false);
     }
@@ -176,6 +182,7 @@ export default function Inbox() {
       setCategories([...categories, newCategory]);
       setIsCategoryModalOpen(false);
     } catch (error) {
+      console.log("Error updating categories: ", error);
       toast.error("Error updating Categories");
     }
   };
@@ -209,6 +216,7 @@ export default function Inbox() {
 
       setCategories(newCategories);
     } catch (error) {
+      console.log("Error deleting Categories: ", error);
       toast.error("Error deleting Categories");
     }
   };
@@ -245,6 +253,7 @@ export default function Inbox() {
           setCategories([...data.categories]);
         }
       } catch (error) {
+        console.log("Error getting categories: ", error);
         toast.error("Error getting categories");
       }
     };
@@ -283,6 +292,7 @@ export default function Inbox() {
         });
       }
     } catch (error) {
+      console.log("Error loading attachments: ", error);
       toast.error("Error loading attachments");
     } finally {
       setDidAttachmentsLoad(true);
@@ -419,7 +429,10 @@ export default function Inbox() {
                             {email.snippet}
                           </p>
                         </div>
-                        <div className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <p className="text-sm text-muted-foreground">
                             {formatDate(email.headers.date)}
                           </p>
@@ -434,8 +447,8 @@ export default function Inbox() {
                             </SelectTrigger>
                             <SelectContent>
                               {categories.map((category) => (
-                                <SelectItem 
-                                  key={category.name} 
+                                <SelectItem
+                                  key={category.name}
                                   value={category.name}
                                 >
                                   {category.name}

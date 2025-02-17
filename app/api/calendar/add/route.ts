@@ -3,20 +3,15 @@
 
 import fs from "fs";
 import path from "path";
-import { google } from "googleapis";
+import { google, calendar_v3 } from "googleapis";
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
-import {
-  askGemini,
-  extractJson,
-  getEventSummaryPrompt,
-} from "@/utils/ai-stuff";
+import { askGemini, getEventSummaryPrompt } from "@/utils/ai-stuff";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { NextRequest } from "next/server";
 import { requireAuthNoNext } from "@/lib/authRequired";
 import { Attachment } from "@/lib/types";
-import ollama from "ollama";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAuthNoNext(request);
@@ -141,7 +136,7 @@ export async function markEventInCalendarWithAttachment(
     id: attachment.attachmentId,
   });
   console.log("Got the Attachment Buffer");
-  const base64Data = attachmentRes.data.data;
+  const base64Data = attachmentRes.data.data!;
   const fileBuffer = Buffer.from(base64Data, "base64");
   const tempDir = path.join(process.cwd(), "temp");
   if (!fs.existsSync(tempDir)) {
@@ -149,12 +144,12 @@ export async function markEventInCalendarWithAttachment(
   }
   const localFilePath = path.join(tempDir, attachment.filename);
   fs.writeFileSync(localFilePath, fileBuffer);
-  const resultLocal = await ollama.chat({
-    model: "llava:7b",
-    messages: [{ role: "user", content: eventPrompt, images: [localFilePath] }],
-  });
-  // console.log(resultLocal.message.content);
-  console.log(extractJson(resultLocal.message.content));
+  // const resultLocal = await ollama.chat({
+  //   model: "llava:7b",
+  //   messages: [{ role: "user", content: eventPrompt, images: [localFilePath] }],
+  // });
+  // // console.log(resultLocal.message.content);
+  // console.log(extractJson(resultLocal.message.content));
   const result = await askGemini(
     eventPrompt,
     attachment.filename,
@@ -181,23 +176,13 @@ export async function markEventInCalendarWithAttachment(
   return event_id;
 }
 
-export async function markCalendar(result) {
+export async function markCalendar(
+  result: calendar_v3.Schema$Event
+): Promise<string> {
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
-  const eventInsertPromise = new Promise((resolve, reject) => {
-    calendar.events.insert(
-      {
-        calendarId: "primary",
-        resource: result,
-      },
-      (err, event) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(event);
-        }
-      }
-    );
+  const eventResponse = await calendar.events.insert({
+    calendarId: "primary",
+    requestBody: result,
   });
-  const res = await eventInsertPromise;
-  return res.data.id;
+  return eventResponse.data.id!;
 }

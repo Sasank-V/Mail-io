@@ -6,8 +6,12 @@ import { navs } from "./lib/constants";
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  const protectedRoutes = navs.filter((nav) => nav.auth === true).map((nav) => nav.link);
-  const isProtected = protectedRoutes.some((route) => req.nextUrl.pathname.startsWith(route));
+  const protectedRoutes = navs
+    .filter((nav) => nav.auth === true)
+    .map((nav) => nav.link);
+  const isProtected = protectedRoutes.some((route) =>
+    req.nextUrl.pathname.startsWith(route)
+  );
 
   if (isProtected && !token) {
     const url = new URL("/", req.url);
@@ -21,5 +25,5 @@ export async function middleware(req: NextRequest) {
 
 // Apply middleware only to protected routes
 export const config = {
-  matcher: navs.filter((nav) => nav.auth === true).map((nav) => nav.link+"/:path*"), // Adjust for your app
+  matcher: ["/dashboard/:path*", "/inbox/:path*", "/events/:path*"],
 };
