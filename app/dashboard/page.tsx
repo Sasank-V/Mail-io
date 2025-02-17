@@ -1,28 +1,27 @@
 "use client";
 
-import Image from "next/image";
-import { Mail, MailOpen, Star, Trash, Send, Archive } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { IEmailCategoryNumber } from "@/lib/types";
 import { useSession } from "next-auth/react";
 
 const Dashboard = () => {
-  const { theme } = useTheme();
   const [emailStats, setEmailStats] = useState<IEmailCategoryNumber[]>([]);
-  const {data: session, status} = useSession();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const getCategoriesList = async () => {
-      const res = await fetch(`/api/email/category/count?user_id=${session?.user?.id}`, {
-        method: "GET"
-      });
+      const res = await fetch(
+        `/api/email/category/count?user_id=${session?.user?.id}`,
+        {
+          method: "GET",
+        }
+      );
 
       const data = await res.json();
 
       setEmailStats(data.email_category_count);
       console.log(data);
-    }
+    };
 
     if (status === "authenticated") getCategoriesList();
   }, [session?.user?.id, status]);
@@ -50,7 +49,7 @@ const Dashboard = () => {
           </div>
         ))}
       </div>
-{/* 
+      {/* 
       <div className="w-full mt-10">
         <h2 className="text-3xl font-semibold mb-6">Recent Activity</h2>
         <div className="bg-secondary bg-opacity-50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">

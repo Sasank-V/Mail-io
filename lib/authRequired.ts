@@ -1,8 +1,10 @@
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { authConfig } from "@/lib/auth"; // Adjust the path as needed
 import { NextRequest, NextResponse } from "next/server";
 
-export async function requireAuth(req: NextRequest, next: Function) {
+type NextCallback = (session: Session) => NextResponse | Promise<NextResponse>;
+
+export async function requireAuth(req: NextRequest, next: NextCallback) {
   const session = await getServerSession({ req, ...authConfig });
 
   if (!session) {
