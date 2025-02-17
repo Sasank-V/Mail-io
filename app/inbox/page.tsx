@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import {
   Search,
@@ -151,6 +151,7 @@ export default function Inbox() {
       toast.success(`${data.messages.length} emails retrieved.`);
     } catch (error) {
       toast.error("There was an error syncing your emails. Please try again.");
+      console.log("Error while getting emails: ", error);
     } finally {
       setIsSyncing(false);
     }
@@ -181,6 +182,7 @@ export default function Inbox() {
       setCategories([...categories, newCategory]);
       setIsCategoryModalOpen(false);
     } catch (error) {
+      console.log("Error updating categories: ", error);
       toast.error("Error updating Categories");
     }
   };
@@ -214,6 +216,7 @@ export default function Inbox() {
 
       setCategories(newCategories);
     } catch (error) {
+      console.log("Error deleting Categories: ", error);
       toast.error("Error deleting Categories");
     }
   };
@@ -250,6 +253,7 @@ export default function Inbox() {
           setCategories([...data.categories]);
         }
       } catch (error) {
+        console.log("Error getting categories: ", error);
         toast.error("Error getting categories");
       }
     };
@@ -288,6 +292,7 @@ export default function Inbox() {
         });
       }
     } catch (error) {
+      console.log("Error loading attachments: ", error);
       toast.error("Error loading attachments");
     } finally {
       setDidAttachmentsLoad(true);
