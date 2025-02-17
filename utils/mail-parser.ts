@@ -4,13 +4,13 @@ import { google, gmail_v1 } from "googleapis";
 import { simpleParser } from "mailparser";
 
 interface FilteredEmail {
-  headers: Header[];
+  headers: Header;
   text: string;
   html: string;
   attachments: Attachment[];
 }
 
-interface Header {
+export interface Header {
   recieved: string[];
   date: string;
   subject: string;
@@ -37,7 +37,7 @@ export async function getParsedEmail(
         "payload(parts(partId, mimeType, filename, body(attachmentId,data)))",
     });
     const rawMessage = res.data.raw;
-    const decodedMessage = Buffer.from(rawMessage, "base64");
+    const decodedMessage = Buffer.from(rawMessage!, "base64");
     const parsed = await simpleParser(decodedMessage);
     // console.log(rawMessage);
     // console.log("Directly parsed email:", parsed.attachments);
@@ -52,8 +52,8 @@ export async function getParsedEmail(
     const filteredEmail = {
       headers: filteredHeaders,
       attachments,
-      text: parsed.text,
-      html: parsed.html,
+      text: parsed.text || "",
+      html: parsed.html || "",
     };
     return filteredEmail;
   } catch (error) {
@@ -102,9 +102,7 @@ async function getAttachmentsFromFull(
 ) {
   let attachments: Attachment[] = [];
 
-  // Ensure payload is defined and check if it has a 'parts' property
   if (
-    payload &&
     "parts" in payload &&
     Array.isArray(payload.parts) &&
     payload.parts.length > 0
@@ -120,8 +118,7 @@ async function getAttachmentsFromFull(
         });
       }
     }
-  } else if (payload && payload.body && payload.body.attachmentId) {
-    // If the payload does not have parts but contains an attachment
+  } else if ("body" in payload && payload.body?.attachmentId) {
     attachments.push({
       filename: "filename" in payload ? payload.filename || "" : "",
       attachmentId: payload.body.attachmentId,

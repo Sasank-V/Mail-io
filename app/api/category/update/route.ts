@@ -1,4 +1,5 @@
 import { requireAuth } from "@/lib/authRequired";
+import { ICategory } from "@/lib/types";
 import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
 import { NextRequest } from "next/server";
@@ -24,15 +25,18 @@ export async function POST(request: NextRequest) {
       }
       user.categories = categories;
       user.messages = user.messages.filter((msg) =>
-        categories.some((category) => category.name === msg.category)
+        categories.some((category: ICategory) => category.name === msg.category)
       );
       if (user.categories.length == 0) {
-        user.categories.push({ name: "General", description: "All the Emails" });
+        user.categories.push({
+          name: "General",
+          description: "All the Emails",
+        });
       }
-  
+
       // Clear user messages after every update
       user.messages = [];
-  
+
       await user.save();
       return Response.json({
         success: true,
@@ -48,5 +52,5 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-  })
+  });
 }

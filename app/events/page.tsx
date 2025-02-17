@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Search, Calendar, Mic, Trash2 } from "lucide-react";
+import { Search, Calendar, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { format, parseISO } from "date-fns";
@@ -24,7 +24,7 @@ export default function Events() {
   const [events, setEvents] = useState<IEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const formatToRFC3339 = (dateString: string) => {
     if (!dateString) return "";
@@ -65,12 +65,12 @@ export default function Events() {
         `/api/calendar/delete?user_id=${session?.user.id}&event_id=${event_id}`
       );
       if (!res.ok) {
-        toast.error(res.message || res.error);
+        toast.error("Error occured while marking , Try Again");
       }
       setEvents(events.filter((event) => event.id != event_id));
       toast.success("Event Deleted Successfully");
     } catch (error) {
-      toast.error(error);
+      toast.error("Some Error Occurred");
       console.log("Error deleting event", error);
     } finally {
       setIsLoading(false);

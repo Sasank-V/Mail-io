@@ -27,21 +27,21 @@ export const features = [
     subtitle:
       "Automatically sorts your emails into Events, Achievements, Important, and General for a streamlined inbox.",
     src: "/category.mov",
-    type: "video"
+    type: "video",
   },
   {
     title: "Intelligent Parsing",
     subtitle:
       "Extracts key details from your emails, such as dates, subjects, and attachments, to help you manage tasks and schedule events.",
-      src: "/parse.png",
-      type: "image"
+    src: "/parse.png",
+    type: "image",
   },
   {
     title: "Seamless Integration",
     subtitle:
       "Effortlessly integrate your inbox with your calendar and productivity tools, ensuring you never miss a critical update.",
-      src: "/final.mov",
-      type: "video"
+    src: "/final.mov",
+    type: "video",
   },
 ];
 
@@ -73,39 +73,39 @@ export const navs = [
 
 export const tiers = [
   {
-    name: 'Starter',
+    name: "Starter",
     price: 9,
     features: [
-      'Basic email classification',
-      'Local AI model support',
-      '1000 classifications/month',
-      'Essential spam filtering'
+      "Basic email classification",
+      "Local AI model support",
+      "1000 classifications/month",
+      "Essential spam filtering",
     ],
-    aiModel: 'qwen-2.5',
+    aiModel: "qwen-2.5",
   },
   {
-    name: 'Pro',
-    price: 29,
+    name: "Pro",
+    price: 19,
     features: [
-      'Advanced email categorization',
-      'Enhanced spam & phishing detection',
-      '5000 classifications/month',
-      'Custom label training',
-      'Faster processing speed'
+      "Advanced email categorization",
+      "Enhanced spam & phishing detection",
+      "5000 classifications/month",
+      "Custom label training",
+      "Faster processing speed",
     ],
-    aiModel: 'gemma',
+    aiModel: "gemma",
     popular: true,
   },
   {
-    name: 'Enterprise',
-    price: 99,
+    name: "Enterprise",
+    price: 29,
     features: [
-      'Custom AI model fine-tuning',
-      'Unlimited email classifications',
-      'Dedicated on-premise deployment',
-      'API access for integration',
-      '24/7 priority support'
+      "Custom AI model fine-tuning",
+      "Unlimited email classifications",
+      "Dedicated on-premise deployment",
+      "API access for integration",
+      "24/7 priority support",
     ],
-    aiModel: 'deepseekv3',
+    aiModel: "deepseekv3",
   },
-]
+];
