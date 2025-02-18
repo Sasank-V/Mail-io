@@ -67,11 +67,14 @@ export async function GET(request: NextRequest) {
     };
     for (const message of threadRes.data.messages!) {
       const res = await getParsedEmail(message.id!);
-      const { headers, attachments, text, html } = res!;
-      combinedEmail.headers.push(headers);
-      combinedEmail.body += text;
-      combinedEmail.attachments = combinedEmail.attachments.concat(attachments);
-      combinedEmail.bodyHTML += html;
+      if (res) {
+        const { headers, attachments, text, html } = res;
+        combinedEmail.headers.push(headers);
+        combinedEmail.body += text;
+        combinedEmail.attachments =
+          combinedEmail.attachments.concat(attachments);
+        combinedEmail.bodyHTML += html;
+      }
     }
     const foundMessage = user.messages.find((msg) => msg.id === message.id);
     let category = foundMessage?.category;

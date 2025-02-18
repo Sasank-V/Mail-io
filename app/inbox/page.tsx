@@ -423,7 +423,7 @@ export default function Inbox() {
                             {email.headers.from}
                           </p>
                           <p className="text-sm font-medium truncate">
-                            {email.headers.subject}
+                            {email.headers.subject!}
                           </p>
                           <p className="text-sm text-contrast/50 truncate">
                             {email.snippet}

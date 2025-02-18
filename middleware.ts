@@ -14,6 +14,8 @@ export async function middleware(req: NextRequest) {
   );
 
   if (isProtected && !token) {
+    console.log(isProtected);
+    console.log(token);
     const url = new URL("/", req.url);
     url.searchParams.append("auth", "required");
 
