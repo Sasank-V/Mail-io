@@ -48,16 +48,17 @@ export async function GET(request: NextRequest) {
   const data = await listResponse.json();
   // console.log(data);
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-  const classifiedEmails = [];
   const threadsVisited: string[] = [];
-  for (const message of data.messages) {
-    if (threadsVisited.find((th) => th == message.threadId)) continue;
+  const classificationPromises = data.messages.map(async (message) => {
+    if (threadsVisited.includes(message.threadId)) return null;
+    threadsVisited.push(message.threadId);
+
+    // Fetch the entire thread in parallel
     const threadRes = await gmail.users.threads.get({
       userId: "me",
       id: message.threadId,
     });
-    // console.log(threadRes.data);
-    threadsVisited.push(message.threadId);
+
     const combinedEmail = {
       snippet: "",
       headers: [] as Header[],
@@ -65,53 +66,53 @@ export async function GET(request: NextRequest) {
       attachments: [] as Attachment[],
       bodyHTML: "",
     };
-    for (const message of threadRes.data.messages!) {
-      const res = await getParsedEmail(message.id!);
+
+    // Parse each message in the thread concurrently
+    const parsePromises = threadRes.data.messages!.map(async (msg) => {
+      const res = await getParsedEmail(msg.id!);
       if (res) {
-        const { headers, attachments, text, html } = res;
-        combinedEmail.headers.push(headers);
-        combinedEmail.body += text;
-        combinedEmail.attachments =
-          combinedEmail.attachments.concat(attachments);
-        combinedEmail.bodyHTML += html;
+        combinedEmail.headers.push(res.headers);
+        combinedEmail.body += res.text;
+        combinedEmail.attachments.push(...res.attachments);
+        combinedEmail.bodyHTML += res.html;
       }
-    }
+    });
+
+    await Promise.all(parsePromises); // Wait for all messages in the thread to be parsed
+
+    let category;
     const foundMessage = user.messages.find((msg) => msg.id === message.id);
-    let category = foundMessage?.category;
-    if (!foundMessage) {
+    if (foundMessage) {
+      category = foundMessage.category;
+    } else {
       const prompt = getEmailClassifyPrompt(
         combinedEmail.body,
         user.categories
       );
-
-      // const res = await ollama.chat({
-      //   model: "qwen2.5:0.5b",
-      //   messages: [{ role: "user", content: prompt }],
-      // });
       const response = await askGemini(prompt);
-      // console.log(res.message.content);
-      // const response = extractJson(res.message.content);
-      if (!response) {
-        return Response.json({
-          success: false,
-          message: "LLM Gave Shit Response, Try your luck next time",
-        });
-      }
+      if (!response) return null;
+
+      category = response.type;
       user.messages.push({
         id: message.id,
-        category: response.type,
+        category,
         marked: false,
         event_ids: [],
       });
-      category = response.type;
     }
-    classifiedEmails.push({
+
+    return {
       ...combinedEmail,
       category,
       message_id: message.id,
-    });
-    console.log(classifiedEmails.length);
-  }
+    };
+  });
+
+  // Execute all classification tasks concurrently
+  const classifiedEmails = (await Promise.all(classificationPromises)).filter(
+    Boolean
+  );
+
   await user.save();
   return Response.json({
     success: true,

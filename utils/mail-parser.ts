@@ -101,7 +101,7 @@ async function getAttachmentsFromFull(
   payload: gmail_v1.Schema$MessagePart | gmail_v1.Schema$MessagePartBody
 ) {
   let attachments: Attachment[] = [];
-
+  if (!payload) return attachments;
   if (
     "parts" in payload &&
     Array.isArray(payload.parts) &&
