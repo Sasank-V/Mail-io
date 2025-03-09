@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/authRequired";
 import { ICategory } from "@/lib/types";
 import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
+import { clearCache } from "@/utils/redis-cache";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -38,6 +39,8 @@ export async function POST(request: NextRequest) {
       user.messages = [];
 
       await user.save();
+      const cacheKey = `categories:${user_id}`;
+      await clearCache(cacheKey);
       return Response.json({
         success: true,
         message: "User Categories Updated Successfully",

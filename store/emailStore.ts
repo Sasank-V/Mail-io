@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { IEmail } from '@/lib/types';
+import { create } from "zustand";
+import { IEmail } from "@/lib/types";
 
 interface EmailStore {
   emails: IEmail[];

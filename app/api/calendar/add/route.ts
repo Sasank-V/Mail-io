@@ -80,14 +80,16 @@ export async function GET(request: NextRequest) {
         : null;
     const event_ids = [];
     if (imageAttachments) {
-      for (const attachment of imageAttachments) {
-        const event_id = await markEventInCalendarWithAttachment(
-          message_id,
-          attachment,
-          eventPrompt
-        );
-        event_ids.push(event_id);
-      }
+      await Promise.all(
+        imageAttachments.map(async (attachment) => {
+          const event_id = await markEventInCalendarWithAttachment(
+            message_id,
+            attachment,
+            eventPrompt
+          );
+          event_ids.push(event_id);
+        })
+      );
     } else {
       const result = await askGemini(eventPrompt);
       result.start.timeZone = result.start.timeZone || "Asia/Kolkata";
