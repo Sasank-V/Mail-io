@@ -10,11 +10,11 @@ import { Attachment } from "@/lib/types";
 
 // const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function GET(request: NextRequest) {
-  const authResult = await requireAuthNoNext(request);
-  const authRes = await authResult.json();
-  if (!authRes.success) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // const authResult = await requireAuthNoNext(request);
+  // const authRes = await authResult.json();
+  // if (!authRes.success) {
+  //   return Response.json({ error: "Unauthorized" }, { status: 401 });
+  // }
 
   const searchParams = request.nextUrl.searchParams;
   const user_id = searchParams.get("user_id");
