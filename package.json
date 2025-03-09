@@ -25,6 +25,7 @@
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.8.1",
     "@types/he": "^1.2.3",
+    "@types/ioredis": "^5.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -33,6 +34,7 @@
     "google-auth-library": "^9.15.1",
     "googleapis": "^144.0.0",
     "he": "^1.2.0",
+    "ioredis": "^5.5.0",
     "lucide-react": "^0.474.0",
     "mailparser": "^3.7.2",
     "mjml": "^4.15.3",
@@ -51,6 +53,7 @@
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "tesseract.js": "^1.0.19",
+    "userland": "^0.4.3",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

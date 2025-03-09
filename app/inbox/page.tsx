@@ -112,13 +112,14 @@ export default function Inbox() {
 
   const getEmails = async () => {
     if (status !== "authenticated" || !session?.user?.id) return;
-
+    console.log(pageTokenArray);
+    console.log(currentPage);
     setIsSyncing(true);
     try {
       let url = "/api/email/all";
       url = url + `?user_id=${session.user.id}`;
       url = url + `&page_token=${pageTokenArray[currentPage]}`;
-
+      console.log(url);
       const res = await fetch(url, {
         method: "GET",
       });
@@ -130,7 +131,7 @@ export default function Inbox() {
       const data = await res.json();
 
       const mergedEmails = [];
-
+      console.log(data);
       for (const msg of data.messages) {
         mergedEmails.push({
           ...msg,
@@ -139,14 +140,15 @@ export default function Inbox() {
       }
 
       setEmails(mergedEmails);
-
-      if (pageTokenArray.length > currentPage) {
-        const newPageTokenArray = pageTokenArray;
-        newPageTokenArray[currentPage + 1] = data.next_page_token;
-        setPageTokenArray(newPageTokenArray);
-      } else {
-        setPageTokenArray([...pageTokenArray, data.next_page_token]);
-      }
+      setPageTokenArray((prev) => {
+        const newArray = [...prev];
+        if (currentPage + 1 >= prev.length) {
+          newArray.push(data.next_page_token);
+        } else {
+          newArray[currentPage + 1] = data.next_page_token;
+        }
+        return newArray;
+      });
 
       toast.success(`${data.messages.length} emails retrieved.`);
     } catch (error) {
@@ -223,18 +225,19 @@ export default function Inbox() {
 
   const handlePrevPage = async () => {
     setCurrentPage(currentPage - 1);
-    getEmails();
   };
 
-  const handleNextPage = async () => {
+  const handleNextPage = () => {
     setCurrentPage(currentPage + 1);
-    getEmails();
   };
+
+  useEffect(() => {
+    getEmails();
+  }, [currentPage]);
 
   useEffect(() => {
     const getCategories = async () => {
       if (status !== "authenticated" || !session?.user?.id) return;
-
       try {
         const res = await fetch(
           `/api/category/get?user_id=${session?.user?.id}`,
@@ -259,7 +262,7 @@ export default function Inbox() {
     };
 
     getCategories();
-  }, [session, status]);
+  }, []);
 
   const filteredEmails = emails.filter(
     (email) =>
@@ -273,24 +276,19 @@ export default function Inbox() {
     setSelectedMail(email);
     setIsMailSelected(true);
 
-    const attachments = [];
+    let attachments = [];
 
     try {
-      for (const attachment of email?.attachments) {
-        const res = await fetch(
-          `/api/attachment/get?user_id=${session?.user.id}&message_id=${email.message_id}&attachment_id=${attachment.attachmentId}&filename=${attachment.filename}`,
-          {
-            method: "GET",
-          }
-        );
-
-        const { filePath: filePath } = await res.json();
-
-        attachments.push({
-          filename: attachment.filename,
-          url: filePath,
-        });
-      }
+      attachments = await Promise.all(
+        email.attachments.map(async (attachment) => {
+          const res = await fetch(
+            `/api/attachment/get?user_id=${session?.user.id}&message_id=${email.message_id}&attachment_id=${attachment.attachmentId}&filename=${attachment.filename}`
+          );
+          const { filePath } = await res.json();
+          return { filename: attachment.filename, url: filePath };
+        })
+      );
+      // setAttachments(attachments);
     } catch (error) {
       console.log("Error loading attachments: ", error);
       toast.error("Error loading attachments");
@@ -307,7 +305,7 @@ export default function Inbox() {
           <h1 className="text-4xl font-semibold mb-2">Email Inbox</h1>
         </div>
         <Button
-          onClick={getEmails}
+          onClick={() => getEmails()}
           disabled={isSyncing || status !== "authenticated"}
           className="flex items-center gap-2 bg-contrast"
         >

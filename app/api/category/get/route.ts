@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/authRequired";
 import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
+import { getOrSetCache } from "@/utils/redis-cache";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -20,9 +21,13 @@ export async function GET(request: NextRequest) {
           { status: 404 }
         );
       }
+      const cacheKey = `categories:${user_id}`;
+      const data = await getOrSetCache(cacheKey, 60 * 60, async () => {
+        return getCategories(user);
+      });
       return Response.json({
         success: true,
-        categories: user.categories,
+        categories: data,
       });
     } catch (error) {
       console.log("Error while fetching Categories");
@@ -36,3 +41,7 @@ export async function GET(request: NextRequest) {
     }
   });
 }
+
+const getCategories = (user: IUser) => {
+  return user.categories;
+};
