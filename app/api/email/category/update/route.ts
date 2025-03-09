@@ -1,5 +1,6 @@
 import { User, IUser } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
+import { clearCache } from "@/utils/redis-cache";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
