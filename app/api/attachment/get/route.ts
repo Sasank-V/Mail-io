@@ -6,6 +6,7 @@ import { IUser, User } from "@/models/User";
 import { requireAuthNoNext } from "@/lib/authRequired";
 import path from "path";
 import fs from "fs";
+import { getOrSetCache } from "@/utils/redis-cache";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAuthNoNext(request);
@@ -46,13 +47,10 @@ export async function GET(request: NextRequest) {
     oauth2Client.setCredentials({
       access_token: user.access_token,
     });
-    const attachmentRes = await gmail.users.messages.attachments.get({
-      userId: "me",
-      messageId: message_id,
-      id: attachment_id,
-    });
-    const base64Data = attachmentRes.data.data;
-    const fileBuffer = Buffer.from(base64Data!, "base64");
+    const cacheKey = `attachments:${user_id}:${attachment_id}`;
+    const fileBuffer = getOrSetCache(cacheKey, 2 * 60 * 60, async () =>
+      getAttachmentData(gmail, message_id, attachment_id)
+    );
     const tempDir = path.join(process.cwd(), "public");
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
@@ -71,4 +69,14 @@ export async function GET(request: NextRequest) {
       message: "Error while fetching and Creating Attachement",
     });
   }
+}
+
+async function getAttachmentData(gmail, message_id, attachment_id) {
+  const attachmentRes = await gmail.users.messages.attachments.get({
+    userId: "me",
+    messageId: message_id,
+    id: attachment_id,
+  });
+  const base64Data = attachmentRes.data.data;
+  return Buffer.from(base64Data!, "base64");
 }

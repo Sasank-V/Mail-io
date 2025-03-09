@@ -7,6 +7,7 @@ import { getParsedEmail, Header } from "@/utils/mail-parser";
 import { requireAuthNoNext } from "@/lib/authRequired";
 import { google } from "googleapis";
 import { Attachment } from "@/lib/types";
+import { getOrSetCache } from "@/utils/redis-cache";
 
 // const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function GET(request: NextRequest) {
@@ -15,25 +16,54 @@ export async function GET(request: NextRequest) {
   if (!authRes.success) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const user_id = searchParams.get("user_id");
+    const page_token = searchParams.get("page_token");
 
-  const searchParams = request.nextUrl.searchParams;
-  const user_id = searchParams.get("user_id");
-  const page_token = searchParams.get("page_token");
+    await connect_DB();
+    const user = await User.findOne<IUser>({ google_id: user_id });
+    if (!user) {
+      return Response.json({ success: false, message: "User not found" });
+    }
+    if (!user?.access_token) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    await refresh_access_token(user);
 
-  await connect_DB();
-  const user = await User.findOne<IUser>({ google_id: user_id });
-  if (!user) {
-    return Response.json({ success: false, message: "User not found" });
+    const cacheKey = `emails:${user_id}:${page_token || "initial"}`;
+    const resData = await getOrSetCache(cacheKey, 3 * 60, async () =>
+      fetchAndClassifyEmails(user, page_token)
+    );
+
+    // console.log(resData?.nextPageToken);
+    if (!resData) {
+      return Response.json({
+        success: false,
+        message: "Some Error while getting emails, Try Again",
+      });
+    }
+    return Response.json({
+      success: true,
+      next_page_token: resData?.nextPageToken,
+      messages: resData?.classifiedEmails,
+    });
+  } catch (error) {
+    console.log("Error while fetching emails: ", error);
+    return Response.json({
+      success: false,
+      message: error,
+    });
   }
-  if (!user?.access_token) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  await refresh_access_token(user);
+}
+
+async function fetchAndClassifyEmails(user: IUser, page_token: string | null) {
   const baseUrl = "https://gmail.googleapis.com/gmail/v1/users/me/messages";
   const url = new URL(baseUrl);
   if (page_token) {
     url.searchParams.append("pageToken", page_token);
   }
+  console.log("Page token: ", page_token);
   url.searchParams.append("maxResults", "15");
   url.searchParams.append("q", "in:inbox -in:sent");
   oauth2Client.setCredentials({
@@ -47,6 +77,9 @@ export async function GET(request: NextRequest) {
   });
   const data = await listResponse.json();
   // console.log(data);
+  if (data.error) {
+    return;
+  }
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const threadsVisited: string[] = [];
   const classificationPromises = data.messages.map(async (message) => {
@@ -90,6 +123,9 @@ export async function GET(request: NextRequest) {
         user.categories
       );
       const response = await askGemini(prompt);
+      // const response = ollama.chat({
+      //   model:""
+      // });
       if (!response) return null;
 
       category = response.type;
@@ -109,14 +145,11 @@ export async function GET(request: NextRequest) {
   });
 
   // Execute all classification tasks concurrently
-  const classifiedEmails = (await Promise.all(classificationPromises)).filter(
-    Boolean
-  );
-
   await user.save();
-  return Response.json({
-    success: true,
-    next_page_token: data.nextPageToken,
-    messages: classifiedEmails,
-  });
+  return {
+    classifiedEmails: (await Promise.all(classificationPromises)).filter(
+      Boolean
+    ),
+    nextPageToken: data.nextPageToken,
+  };
 }
