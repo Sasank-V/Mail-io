@@ -1,0 +1,21 @@
+# Ignore node_modules (it will be installed inside the container)
+node_modules
+.next/cache
+.next/standalone
+.next/output
+.temp
+
+# Ignore build artifacts
+*.log
+*.tsbuildinfo
+
+# Ignore environment files (don't copy sensitive data)
+.env*
+.env.local
+
+# Ignore IDE/editor config files
+.vscode
+*.swp
+
+# Ignore Git
+.git
